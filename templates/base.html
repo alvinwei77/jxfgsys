@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}废钢供应链{% endblock %} - 废钢供应链系统</title>
+<link rel="stylesheet" href="/static/css/style.css">
+<script src="/static/js/app.js"></script>
+{% block extra_head %}{% endblock %}
+</head>
+<body>
+<div class="topbar">
+  <div class="brand">废钢供应链 <span class="ver" id="app-ver" title="当前运行的版本">v{{ app_version }}</span></div>
+  <nav>
+    <a href="/m" class="nav-phone-only">手机录入</a>
+    <a href="/" class="{{ 'active' if active=='dashboard' }}">首页看板</a>
+    <a href="/trips" class="{{ 'active' if active=='trips' }}">车次管理</a>
+    <a href="/tracking" class="{{ 'active' if active=='tracking' }}">回款追踪</a>
+    <a href="/reports" class="{{ 'active' if active=='reports' }}">统计报表</a>
+    <a href="/quotes" class="{{ 'active' if active=='quotes' }}">报价单</a>
+    <a href="/archives" class="{{ 'active' if active=='archives' }}">基础档案</a>
+    <a href="/rate_links" class="{{ 'active' if active=='rate_links' }}">费率与关系</a>
+    <a href="/chain_rules" class="{{ 'active' if active=='chain_rules' }}">链条规则</a>
+    <a href="/glossary" class="{{ 'active' if active=='glossary' }}" title="黑话 ↔ 系统叫法 ↔ 在哪个页面；常见事情怎么做">术语速查</a>
+    <a href="/system" class="{{ 'active' if active=='system' }}">系统</a>
+  </nav>
+</div>
+<div id="update-banner" class="update-banner" hidden></div>
+<div class="container">
+<div class="page-header page-header-row"><h1>{% block page_heading %}{{ self.title() }}{% endblock %}</h1><div class="page-actions">{% block header_actions %}{% endblock %}</div></div>
+{% block content %}{% endblock %}
+</div>
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

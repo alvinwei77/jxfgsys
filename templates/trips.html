@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}车次管理{% endblock %}
+{% block content %}
+<div class="toolbar">
+  <select id="f-status"><option value="">全部状态</option>
+    {% for code,label in status_list %}<option value="{{code}}">{{label}}</option>{% endfor %}
+  </select>
+  <select id="f-mill"><option value="">全部钢厂</option></select>
+  <select id="f-base"><option value="">全部供货厂</option></select>
+  <select id="f-type"><option value="">车/船</option><option value="truck">车</option><option value="ship">船</option></select>
+  <input id="f-from" type="date" class="date-sm" title="起始日期">
+  <input id="f-to" type="date" class="date-sm" title="截止日期">
+  <input id="f-q" placeholder="车号/司机" style="width:110px;">
+  <button onclick="loadTrips()">筛选</button>
+  <div class="spacer"></div>
+  <button onclick="exportCsv()" title="导出当前列表为 CSV（可用 Excel 打开）">导出CSV</button>
+  <button onclick="exportLedger()" title="导出车次明细+磅重明细+统计汇总三个sheet的完整台账">导出台账</button>
+  <button onclick="openImportDialog()" title="从 Excel / 钢厂结算单整块复制粘贴 → 系统自动认出每列是什么（日期/车号/货型/扣杂/吨位/单价/金额/切割费/结算单号/票源/调货人），认错可用下拉改；按车号+日期匹配已有车次，找不到的自动新建并推进到「已结算」">批量录入（粘贴·自动认列）</button>
+  <button onclick="editEntryDefaults()" title="新建车次时自动填的默认值（发货地等）">默认值</button>
+  <div class="colset-wrap">
+    <button onclick="toggleColSet(event)" title="选列表里显示哪些列。设过的会记住，下次打开还是这样。">列设置</button>
+    <div class="colset-menu" id="colset-menu" hidden></div>
+  </div>
+  <button class="btn-primary" onclick="createTrip()">+ 新建车次</button>
+</div>
+
+<div class="drill-banner" id="drill-banner" hidden></div>
+
+<div class="batch-bar" id="batch-bar" hidden>
+  <span id="batch-count"></span>
+  <span>批量推进到</span>
+  <select id="batch-target" onchange="this.dataset.touched='1'"></select>
+  <button class="btn-primary" onclick="batchAdvance()">推进…</button>
+  <button onclick="clearSelection()">取消选择</button>
+</div>
+
+<div class="card table-scroll">
+  <table id="trip-table" class="trip-table">
+    <thead><tr>
+      <th class="col-check"><input type="checkbox" title="全选当前列表" onchange="toggleSelectAll(this.checked)"></th>
+      <th data-col="date">日期</th><th data-col="plate">车号/船号</th><th data-col="chain" title="链条规则简写，在链条规则页可改">链条</th>
+      <th data-col="tonnage" class="num" title="毛重减皮重得净重，再扣掉杂质吨位，剩下的才是钢厂认账的吨位">结算吨位</th>
+      <th data-col="deduction" class="num" title="钢厂验货时按杂质比例扣掉的吨位">扣杂</th>
+      <th data-col="amount" class="num" title="钢厂结算单上的含税金额">结算金额</th>
+      <th data-col="party" title="有调货人时显示为 调货人：供货厂；调货人自己车队的车显示为 某某车队">调货人：供货厂</th>
+      <th data-col="mill" class="col-mill">钢厂</th><th data-col="status">状态</th>
+      <th data-col="progress" title="结算单 → 开票(票) → 回款(款) → 下一步">进度</th><th class="col-ops"></th>
+    </tr></thead>
+    <tbody id="trip-tbody"><tr><td colspan="13" class="empty-hint">加载中...</td></tr></tbody>
+  </table>
+</div>
+
+<div id="drawer-root"></div>
+<div id="modal-root"></div>
+<div id="dialog-root"></div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="/static/js/trips.js"></script>
+<script src="/static/js/import_settlement.js"></script>
+{% endblock %}

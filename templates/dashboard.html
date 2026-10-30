@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}首页看板{% endblock %}
+{% block header_actions %}<button class="btn-primary" onclick="exportReportPdf(this)" title="生成给领导看的经营报告（手机阅读格式 PDF）">导出经营报告 PDF</button><a class="btn-link" href="/report" target="_blank">在线预览</a>{% endblock %}
+{% block content %}
+<div class="grid-stats" id="stats"></div>
+
+<div class="quick-actions">
+  <a class="qa-btn primary" href="/trips?new=1" title="录一车货：填车牌就开始，其他按历史自动带出">
+    <span class="qa-ico">＋</span><div><b>新建车次</b><small>录一车货，填车牌就能开始</small></div>
+  </a>
+  <a class="qa-btn" href="/trips?import=1" title="把钢厂结算单整块复制粘贴进来，系统自动认出每一列是什么">
+    <span class="qa-ico">⇥</span><div><b>批量录入</b><small>结算单整块粘贴，自动认列</small></div>
+  </a>
+  <a class="qa-btn" href="/tracking" title="登记开票批次、欧冶回款批次，看哪些车还没走完">
+    <span class="qa-ico">↻</span><div><b>回款追踪</b><small>登记开票 / 打款批次</small></div>
+  </a>
+</div>
+
+<div class="card alerts-card">
+  <div class="panel-title-row"><div class="panel-title">待办与预警</div><span class="muted" id="alerts-sum"></span></div>
+  <div id="alerts"></div>
+</div>
+
+<div class="card">
+  <div class="panel-title-row">
+    <div class="panel-title">资金占用与待办（开票 / 回款）</div>
+    <a href="/tracking" class="muted">去回款追踪登记批次 ›</a>
+  </div>
+  <div id="capital-cards" class="hop-grid"></div>
+  <div class="muted" style="margin-top:8px;">历史车次还没补登回款批次，补登前"欧冶回款"会把它们都算作未回款。</div>
+</div>
+
+<div class="dash-row">
+  <div class="card chart-card">
+    <div class="panel-title">近14天送货吨位趋势</div>
+    <div id="tonnage-chart"></div>
+  </div>
+  <div class="card chart-card">
+    <div class="panel-title"><span class="term" title="票源额度：这家票源方在我们这边最多能开多少票（金额）。水位＝已经用掉多少的进度条，到预警线转黄、超过100%转红。月度额度按结算期（26日~次月25日）累计，年度额度按自然年累计。">票源额度水位</span></div>
+    <div id="quota-levels"></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="panel-title"><span class="term" title="结算期：每月 26 日 ~ 次月 25 日算一个结算期。量补档次、月度票额都按这个窗口算，不是自然月。">各钢厂结算周期</span></div>
+  <div style="color:var(--gray-500);font-size:12.5px;margin-bottom:10px;">每家钢厂的量补结算周期规则可能不同，以下按各钢厂自己的周期分别统计（在"基础档案-钢厂量补规则"中配置每家钢厂的周期起止日与阶梯单价）</div>
+  <div id="mill-periods-total"></div>
+  <div id="mill-periods" class="mill-period-grid"></div>
+</div>
+
+<div class="card">
+  <div class="panel-title-row">
+    <div class="panel-title">排名汇总（全部车次，不含已作废）</div>
+    <div class="tabs-inline" id="rank-tabs">
+      <button class="active" data-tab="dispatcher" onclick="switchRankTab('dispatcher')">按调货人排名</button>
+      <button data-tab="base" onclick="switchRankTab('base')">按供货厂汇总</button>
+    </div>
+  </div>
+  <div class="table-scroll">
+    <table id="rank-table">
+      <thead><tr><th id="rank-table-name-th">调货人</th><th class="num">车次数</th><th class="num">吨位</th><th class="num">结算金额</th><th class="num"><span class="term" title="利润估算：已固化的车次取固化快照，没固化的按当前档案参数实时算——只是估算，不是最终会计数。">利润估算</span></th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="/static/js/dashboard.js"></script>
+{% endblock %}

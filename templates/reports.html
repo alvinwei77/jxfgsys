@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}统计报表{% endblock %}
+{% block header_actions %}<button class="btn-primary" onclick="exportOpsReportXlsx(this)" title="导出分期与专题 Excel：①总览/各期明细/调货人工资/量补汇总/票源额度水位（缺省=全部期）">导出经营报告 Excel</button><button class="btn-primary" onclick="exportReportPdf(this)" title="生成给领导看的经营报告（手机阅读格式 PDF）">导出经营报告 PDF</button><a class="btn-link" href="/report" target="_blank">在线预览</a>{% endblock %}
+{% block content %}
+<div class="toolbar">
+  <select id="r-mill"><option value="">全部钢厂</option></select>
+  <select id="r-cycle-period" style="min-width:260px;"><option value="">选择钢厂后可按其历史结算周期快速筛选</option></select>
+  <span class="spacer" style="flex:0 0 12px;"></span>
+  <select id="r-transport">
+    <option value="">车+船（全部）</option>
+    <option value="truck">只看汽运（车）</option>
+    <option value="ship">只看船运（船）</option>
+  </select>
+  <select id="r-datefield">
+    <option value="settlement_date">按结算日期</option>
+    <option value="order_date">按接单日期</option>
+  </select>
+  <input id="r-from" type="date">
+  <span style="color:var(--gray-400);">至</span>
+  <input id="r-to" type="date">
+  <button class="btn-primary" onclick="runQuery()">查询</button>
+  <button onclick="resetQuery()">重置</button>
+</div>
+
+<div class="grid-stats" id="r-stats"></div>
+<div id="r-profit-formula"></div>
+
+<div class="card">
+  <div class="panel-title-row">
+    <div class="panel-title">趋势</div>
+    <div class="tabs-inline" id="r-trend-tabs">
+      <button data-g="day" onclick="setTrendGran('day')">按日</button>
+      <button data-g="week" class="active" onclick="setTrendGran('week')">按周</button>
+      <button data-g="month" onclick="setTrendGran('month')">按月</button>
+      <button data-g="cycle" onclick="setTrendGran('cycle')">按结算周期</button>
+    </div>
+  </div>
+  <div class="trend-grid">
+    <div><div class="chart-title">吨位（车 / 船）</div><div id="r-trend-ton"></div></div>
+    <div><div class="chart-title"><span class="term" title="利润估算：已固化的车次取固化快照，没固化的按当前档案参数实时算——只是估算，不是最终会计数。">利润估算</span>（元）</div><div id="r-trend-profit"></div></div>
+    <div><div class="chart-title"><span class="term" title="单吨利润 = 利润 ÷ 结算吨位，用来横向比不同车/船、不同调货人的赚钱效率。">单吨利润</span>（元/吨）</div><div id="r-trend-ppt"></div></div>
+  </div>
+  <details class="table-toggle"><summary>查看数据表</summary>
+    <div class="table-scroll"><table id="r-trend-table">
+      <thead><tr><th>区间</th><th class="num">车次</th><th class="num">吨位</th><th class="num">车·吨</th><th class="num">船·吨</th><th class="num">结算金额</th><th class="num">利润</th><th class="num">单吨利润</th><th class="num">配票利润</th><th class="num">带票利润</th></tr></thead>
+      <tbody></tbody></table></div>
+  </details>
+</div>
+
+<div class="dash-row">
+  <div class="card">
+    <div class="panel-title">按钢厂汇总</div>
+    <div class="table-scroll"><table id="r-table-mill">
+      <thead><tr><th>钢厂</th><th class="num">总车次</th><th class="num">总吨位</th><th class="num">结算金额</th><th class="num"><span class="term" title="利润估算：已固化的车次取固化快照，没固化的按当前档案参数实时算。">利润估算</span></th><th class="num" title="利润÷吨位">单吨利润</th><th class="num" title="车次/船次，悬停看吨位">车 · 船</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+  <div class="card">
+    <div class="panel-title">按供货厂汇总</div>
+    <div class="table-scroll"><table id="r-table-base">
+      <thead><tr><th>供货厂</th><th class="num">总车次</th><th class="num">总吨位</th><th class="num">结算金额</th><th class="num"><span class="term" title="利润估算：已固化的车次取固化快照，没固化的按当前档案参数实时算。">利润估算</span></th><th class="num" title="利润÷吨位">单吨利润</th><th class="num" title="车次/船次，悬停看吨位">车 · 船</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+</div>
+
+<div class="dash-row">
+  <div class="card">
+    <div class="panel-title">按调货人汇总</div>
+    <div class="table-scroll"><table id="r-table-dispatcher">
+      <thead><tr><th>调货人</th><th class="num">总车次</th><th class="num">总吨位</th><th class="num">结算金额</th><th class="num"><span class="term" title="利润估算：已固化的车次取固化快照，没固化的按当前档案参数实时算。">利润估算</span></th><th class="num" title="利润÷吨位">单吨利润</th><th class="num" title="车次/船次，悬停看吨位">车 · 船</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+  <div class="card">
+    <div class="panel-title">按票源方汇总</div>
+    <div class="table-scroll"><table id="r-table-invoice-source">
+      <thead><tr><th>票源方</th><th class="num">总车次</th><th class="num">总吨位</th><th class="num">结算金额</th><th class="num"><span class="term" title="利润估算：已固化的车次取固化快照，没固化的按当前档案参数实时算。">利润估算</span></th><th class="num" title="利润÷吨位">单吨利润</th><th class="num" title="车次/船次，悬停看吨位">车 · 船</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+</div>
+
+<details class="more-analysis" id="r-more">
+  <summary>更多分析 <span class="ma-hint">利润排名图 · 车船分列 · 结算路径对比 · 质量（扣杂率/均价） · 数据完整度 —— 点开看</span></summary>
+
+  <div class="dash-row">
+    <div class="card">
+      <div class="panel-title">按钢厂 · 利润</div>
+      <div id="r-chart-mill"></div>
+    </div>
+    <div class="card">
+      <div class="panel-title">按调货人 · 利润</div>
+      <div id="r-chart-dispatcher"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="panel-title">按运输方式汇总（车 / 船分开）</div>
+    <div style="font-size:12px;color:var(--gray-500);margin-bottom:8px;">
+      一条船的吨位通常是一辆车的十倍上下，混在一起看"车次数"或任何按车次平均的数字都会被带偏，所以单独分开对比。
+    </div>
+    <div id="r-transport-cards" class="dash-row"></div>
+  </div>
+
+  <div class="card">
+    <div class="panel-title">按结算路径汇总</div>
+    <div id="r-path-cards" class="dash-row"></div>
+  </div>
+
+  <div class="dash-row">
+    <div class="card">
+      <div class="panel-title">质量 · 各供货厂<span class="term" title="扣杂：钢厂验货时按杂质比例扣掉的吨位，扣完剩下的才是结算吨位。">扣杂率</span>与结算均价</div>
+      <div class="table-scroll"><table id="r-q-origin">
+        <thead><tr><th>供货厂/车队</th><th class="num">车次</th><th class="num">净重</th><th class="num">扣杂</th><th class="num">扣杂率</th><th class="num">结算均价(元/吨)</th></tr></thead>
+        <tbody></tbody></table></div>
+    </div>
+    <div class="card">
+      <div class="panel-title">质量 · 各货型吨位与单价走势</div>
+      <div class="table-scroll"><table id="r-q-type">
+        <thead><tr><th>货型</th><th class="num">吨位</th><th class="num">均价</th><th class="num">扣杂率</th><th>按月均价</th></tr></thead>
+        <tbody></tbody></table></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="panel-title">数据完整度（在当前筛选范围内）</div>
+    <div id="r-completeness"></div>
+  </div>
+</details>
+
+<div style="color:var(--gray-400);font-size:12px;margin-top:10px;">
+  说明：<span class="term" title="利润估算：已固化的车次取固化快照，没固化的按当前档案参数实时算——只是估算，不是最终会计数。">利润估算</span> = 已固化车次取固化快照数值，未固化车次按当前档案参数实时估算，仅供参考；不同钢厂的结算周期规则不同（并非都是26日~次月25日），可在左上角先选钢厂再选具体周期快速筛选，也可以直接自定义起止日期查询任意区间。各维度"利润估算"都是同一份"节点化利润构成"逐车次拆解累加而来（点击"利润构成明细"可展开计算过程），口径与首页看板完全一致。
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script src="/static/js/reports.js"></script>
+{% endblock %}

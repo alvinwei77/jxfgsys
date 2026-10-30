@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}回款追踪{% endblock %}
+{% block content %}
+<div class="note-banner" id="t-note">
+  开票线在结算单出了之后才开始，回款线在"销项→欧冶"开出之后才开始；走我们配票（经俊兴）的车次还要追到客户账户这一跳。
+  结算、开票、打款都按<strong>批次</strong>登记：勾选多车 → 登记批次，金额默认按每车票额，可以逐车改。
+  历史车次还没补登批次（等和财务核对后再补），所以状态已到"已开票"的车次，开票环节按状态算作已开；回款环节在补登之前都显示为未登记。
+</div>
+
+<div class="card">
+  <div class="panel-title">资金占用与账龄（按环节）</div>
+  <div id="t-summary" class="hop-grid"></div>
+</div>
+
+<div class="card">
+  <div class="panel-title-row">
+    <div class="panel-title">待办明细</div>
+    <div class="tabs-inline" id="t-hop-tabs"></div>
+  </div>
+  <div class="toolbar">
+    <select id="t-origin"><option value="">全部供货厂/车队</option></select>
+    <input id="t-q" placeholder="车号/结算单号" style="width:150px;">
+    <div class="spacer"></div>
+    <span id="t-sel-info" class="muted"></span>
+    <button class="btn-primary" id="t-make-batch" onclick="openBatchDialog()" disabled>登记批次…</button>
+  </div>
+  <div class="table-scroll"><table id="t-table">
+    <thead><tr><th><input type="checkbox" id="t-all" onchange="toggleAllPending(this.checked)"></th>
+      <th>车号/船号</th><th>结算日期</th><th>结算单号</th><th>货物起点</th><th>环节</th><th>从 → 到</th>
+      <th class="num">票额(估)</th><th class="num">已登记</th><th class="num">待登记</th><th class="num">账龄(天)</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+</div>
+
+<div class="card">
+  <div class="panel-title-row">
+    <div class="panel-title">调货人提成 · 应付 / 已付 / 未付</div>
+    <button onclick="openCommissionDialog()" id="c-make-batch" disabled>登记提成付款…</button>
+  </div>
+  <div class="table-scroll"><table id="c-table">
+    <thead><tr><th>调货人</th><th class="num">车次</th><th class="num">吨位</th><th class="num">应付提成</th><th class="num">已付</th><th class="num">未付</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+  <details id="c-details" style="margin-top:8px;">
+    <summary>未付明细（勾选后登记付款）</summary>
+    <div class="table-scroll"><table id="c-trips">
+      <thead><tr><th><input type="checkbox" onchange="toggleAllComm(this.checked)"></th><th>调货人</th><th>车号</th><th>结算日期</th><th class="num">吨位</th><th class="num">应付</th><th class="num">已付</th><th class="num">未付</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </details>
+</div>
+
+<div class="card">
+  <div class="panel-title-row">
+    <div class="panel-title">批次记录</div>
+    <select id="b-kind" onchange="loadBatches()">
+      <option value="">全部类型</option><option value="invoice">开票</option><option value="payment">打款</option><option value="commission">提成</option>
+    </select>
+  </div>
+  <div class="table-scroll"><table id="b-table">
+    <thead><tr><th>日期</th><th>环节</th><th>从 → 到</th><th>单号/流水号</th><th>收款账户</th><th class="num">车次</th><th class="num">金额</th><th>备注</th><th></th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+</div>
+<div id="dialog-root"></div>
+{% endblock %}
+{% block extra_scripts %}
+<script src="/static/js/tracking.js"></script>
+{% endblock %}

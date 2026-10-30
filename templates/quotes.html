@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}报价单{% endblock %}
+{% block content %}
+<div class="toolbar">
+  <select id="q-mill"></select>
+  <select id="q-sheet"></select>
+  <button class="btn-primary" onclick="newSheet()">+ 新增本期报价单</button>
+  <div class="spacer"></div>
+  <button onclick="saveItems()">保存本期价格</button>
+</div>
+<div class="card">
+  <div id="sheet-meta" style="margin-bottom:10px;color:var(--gray-500);font-size:13px;"></div>
+  <table id="quote-table"><thead><tr>
+    <th>废钢类型</th><th>货型</th><th>品种典型举例</th><th>外形尺寸</th><th>厚度</th>
+    <th class="num">前期价格</th><th class="num">涨跌</th><th class="num">本期价格</th><th>停收</th>
+  </tr></thead><tbody id="quote-tbody"></tbody></table>
+  <div class="field" style="margin-top:12px;">
+    <label>页脚全局规则（量补规则/合规要求等，建议引用钢厂档案内容）</label>
+    <textarea id="footer-notes" rows="4" style="width:100%;" onchange="saveFooter()"></textarea>
+  </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script src="/static/js/quotes.js"></script>
+{% endblock %}

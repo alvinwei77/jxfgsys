@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}系统{% endblock %}
+{% block content %}
+<div class="tabs-inline" id="sys-tabs" style="margin-bottom:12px;">
+  <button data-t="audit" class="active" onclick="sysTab('audit')">操作记录</button>
+  <button data-t="recycle" onclick="sysTab('recycle')">回收站</button>
+  <button data-t="backup" onclick="sysTab('backup')">数据备份</button>
+  <button data-t="verify" onclick="sysTab('verify')">利润核对 <span class="badge-count" id="verify-count" hidden></span></button>
+  <button data-t="settings" onclick="sysTab('settings')">参数设置</button>
+  <button data-t="mobile" onclick="sysTab('mobile')">手机访问</button>
+</div>
+
+<div class="card" id="pane-audit">
+  <div class="toolbar">
+    <select id="a-table"><option value="">全部类型</option></select>
+    <input id="a-record" placeholder="记录编号(如车次ID)" style="width:140px;">
+    <input id="a-q" placeholder="搜内容（车号、金额…）" style="width:180px;">
+    <button onclick="loadAudit()">查询</button>
+    <span class="muted">每一次修改都记在这里：什么时间、改的是哪一条、从什么改成什么。</span>
+  </div>
+  <div class="table-scroll"><table id="a-table-list">
+    <thead><tr><th>时间</th><th>类型</th><th>编号</th><th>改了什么</th><th>原来</th><th>改成</th><th>备注</th></tr></thead>
+    <tbody></tbody></table></div>
+</div>
+
+<div class="card" id="pane-recycle" hidden>
+  <div class="muted" id="r-hint" style="margin-bottom:8px;"></div>
+  <div class="table-scroll"><table id="r-list">
+    <thead><tr><th>删除时间</th><th>类型</th><th>内容</th><th>剩余天数</th><th></th></tr></thead>
+    <tbody></tbody></table></div>
+</div>
+
+<div class="card" id="pane-backup" hidden>
+  <div class="toolbar">
+    <button class="btn-primary" onclick="manualBackup()">立即备份</button>
+    <button class="btn-sm" onclick="archiveAudit()">归档超期记录(>365天)</button>
+    <span class="muted" id="b-hint"></span>
+  </div>
+  <div class="table-scroll"><table id="b-list">
+    <thead><tr><th>时间</th><th>类型</th><th>说明</th><th class="num">大小</th><th class="num">车次</th><th>文件名</th><th></th></tr></thead>
+    <tbody></tbody></table></div>
+</div>
+<div class="card" id="pane-verify" hidden>
+  <div class="toolbar">
+    <button onclick="loadVerify()">重新核对</button>
+    <button id="v-accept-all" onclick="acceptVerify(null)" hidden>全部以当前为准</button>
+    <span class="muted" id="v-hint"></span>
+  </div>
+  <div id="v-changes" class="muted" style="margin:0 0 8px;"></div>
+  <div class="table-scroll"><table id="v-list">
+    <thead><tr><th>车次</th><th>车号</th><th>结算日期</th><th class="num">上次核对时利润</th><th class="num">现在利润</th><th class="num">变动</th><th>上次核对</th><th></th></tr></thead>
+    <tbody></tbody></table></div>
+</div>
+<div class="card" id="pane-settings" hidden>
+  <div class="toolbar">
+    <button class="btn-primary" onclick="saveSettings(this)">保存</button>
+    <button onclick="loadSettings()">重新读取</button>
+    <span class="muted" id="set-hint">这些是提醒阈值和维护参数，改完立刻生效、不用重启系统。</span>
+  </div>
+  <div id="set-body"></div>
+  <div class="muted" style="font-size:12px;margin-top:12px;border-top:1px solid var(--gray-100);padding-top:10px;">
+    这里<b>只放不参与算钱</b>的数字（几天算超期、额度到几成预警、备份留几份…）。
+    <b>费率、点位、额度、量补阶梯</b>不在这里——它们在「费率与关系」「链条规则」「基础档案」里，
+    因为那些改了要按生效时间留痕、不能随手覆盖历史。
+  </div>
+</div>
+<div class="card" id="pane-mobile" hidden>
+  <div class="mobile-access">
+    <div class="ma-main">
+      <p class="ma-state" id="m-state"></p>
+      <div class="toolbar">
+        <input id="m-pin" type="password" inputmode="numeric" placeholder="4~8 位数字口令" style="width:170px;" autocomplete="new-password">
+        <button class="btn-primary" onclick="saveMobilePin()">保存口令并开启</button>
+        <button id="m-disable" onclick="disableMobile()" hidden>关闭手机访问</button>
+      </div>
+      <div id="m-urls"></div>
+      <ul class="ma-notes">
+        <li>手机和这台电脑要连同一个 WiFi，并且电脑上的系统要开着。</li>
+        <li>第一次用手机打开时，电脑上可能弹出"是否允许 Python 接受传入网络连接"，点<b>允许</b>。</li>
+        <li>手机上能报车、到厂、结算、推进状态，也能查看所有数据；删除、恢复备份、改档案/费率/链条规则只能在电脑上做。手机上的修改在操作记录里标"手机"。</li>
+        <li>换了口令，所有手机要重新输入。iPhone 可以在 Safari 里点"分享 → 添加到主屏幕"，以后像 App 一样打开。</li>
+      </ul>
+    </div>
+    <div class="ma-qr" id="m-qr"></div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script src="/static/js/system.js"></script>
+{% endblock %}

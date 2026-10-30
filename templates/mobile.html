@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="废钢录入">
+<meta name="theme-color" content="#1d4ed8">
+<title>废钢录入</title>
+<link rel="stylesheet" href="/static/css/mobile.css">
+</head>
+<body>
+<header class="m-top">
+  <div class="m-title" id="m-title">报车</div>
+  <a class="m-top-link" href="/">电脑版</a>
+</header>
+
+<main>
+  <!-- 报车 -->
+  <section id="tab-new" class="m-pane">
+    <form id="new-form" autocomplete="off" onsubmit="submitNew(event)">
+      <div class="field">
+        <label for="n-plate">车号 / 船号</label>
+        <input id="n-plate" list="plate-list" placeholder="如 苏DBB772" required onchange="onPlate()">
+        <datalist id="plate-list"></datalist>
+        <div class="hint" id="n-plate-hint"></div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>车 / 船</label>
+          <div class="seg" id="n-type">
+            <button type="button" data-v="truck" class="on">车</button><button type="button" data-v="ship">船</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="n-date">接单日期</label>
+          <input id="n-date" type="date" required>
+        </div>
+      </div>
+      <div class="field">
+        <label for="n-base">供货厂</label>
+        <select id="n-base"></select>
+      </div>
+      <div class="field">
+        <label for="n-disp">调货人</label>
+        <select id="n-disp"></select>
+      </div>
+      <div class="field">
+        <label for="n-src">票源</label>
+        <select id="n-src" onchange="suggestTemplate()"></select>
+      </div>
+      <div class="field">
+        <label>链条规则</label>
+        <div class="chips" id="n-tpl"></div>
+        <div class="hint" id="n-tpl-hint"></div>
+      </div>
+      <details class="more">
+        <summary>司机 · 备注（选填）</summary>
+        <div class="field"><label for="n-driver">司机</label><input id="n-driver"></div>
+        <div class="field"><label for="n-phone">司机电话</label><input id="n-phone" type="tel" inputmode="tel"></div>
+        <div class="field"><label for="n-remarks">备注</label><input id="n-remarks"></div>
+      </details>
+      <button type="submit" class="btn-big" id="n-submit">报车</button>
+    </form>
+  </section>
+
+  <!-- 在途 -->
+  <section id="tab-road" class="m-pane" hidden>
+    <div class="pane-head"><span id="road-sum" class="muted"></span><button class="btn-ghost" onclick="loadRoad()">刷新</button></div>
+    <div id="road-list" class="cards"></div>
+  </section>
+
+  <!-- 查车 -->
+  <section id="tab-find" class="m-pane" hidden>
+    <input id="f-q" class="search" placeholder="车号、供货厂、调货人…" oninput="renderFind()">
+    <div class="seg seg-wide" id="f-status">
+      <button type="button" data-v="" class="on">全部</button><button type="button" data-v="settled">已结算</button><button type="button" data-v="invoiced">已开票</button><button type="button" data-v="closed">已结案</button>
+    </div>
+    <div id="find-list" class="cards"></div>
+  </section>
+
+  <!-- 概况 -->
+  <section id="tab-home" class="m-pane" hidden>
+    <div class="kpis" id="kpis"></div>
+    <h3 class="sec-title">待办与预警</h3>
+    <div id="alerts" class="alerts"></div>
+  </section>
+</main>
+
+<nav class="m-tabs">
+  <button data-t="new" class="on" onclick="showTab('new')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>报车</button>
+  <button data-t="road" onclick="showTab('road')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17h2l1-5h9l2 5h4M7 17a2 2 0 1 0 4 0 2 2 0 1 0-4 0M15 17a2 2 0 1 0 4 0 2 2 0 1 0-4 0M6 12l1.5-4h7l2 4"/></svg>在途<b id="road-badge" hidden></b></button>
+  <button data-t="find" onclick="showTab('find')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 4a7 7 0 1 0 0 14 7 7 0 1 0 0-14M20 20l-4-4"/></svg>查车</button>
+  <button data-t="home" onclick="showTab('home')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>概况</button>
+</nav>
+
+<!-- 底部弹出：车次详情 / 结算 -->
+<div class="sheet-mask" id="sheet-mask" hidden onclick="closeSheet()"></div>
+<div class="sheet" id="sheet" hidden>
+  <div class="sheet-grip"></div>
+  <div id="sheet-body"></div>
+</div>
+<div class="m-toast" id="m-toast"></div>
+
+<script src="/static/js/mobile.js"></script>
+</body>
+</html>

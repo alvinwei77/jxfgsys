@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}链条规则{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="toolbar">
+    <div class="tabs-inline" id="cr-view-toggle">
+      <button data-v="plain" class="active" onclick="setCrView('plain')">一眼看懂</button>
+      <button data-v="edit" onclick="setCrView('edit')">编辑</button>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn-primary" id="btn-add-template" hidden>+ 新建链条规则</button>
+  </div>
+  <div id="cr-view-hint" style="font-size:13px;color:var(--gray-500);margin-top:6px;"></div>
+  <div style="font-size:13px;color:var(--gray-500);margin-top:6px;" id="cr-edit-intro" hidden>
+    一条链条规则 = 一条完整业务流程（从票商/供货厂一路到钢厂），车次结算时选定用哪条链条规则计算。
+    每条规则单独一张关系图，可切换"全部/票路径(开票)/财务路径(打款)"查看；下方流程环节列表可以
+    自由增删改——只影响这张图怎么画，不影响实际结算/利润计算公式本身。
+  </div>
+  <div id="new-template-box"></div>
+</div>
+<div id="cr-plain"></div>
+<div id="template-list" hidden></div>
+{% endblock %}
+{% block extra_scripts %}
+<script src="/static/js/chain_rules.js"></script>
+{% endblock %}

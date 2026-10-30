@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1d4ed8">
+<title>废钢录入 · 登录</title>
+<link rel="stylesheet" href="/static/css/mobile.css">
+</head>
+<body class="m-login">
+  <div class="login-box">
+    <div class="login-brand">废钢供应链 <span>手机录入</span></div>
+    {% if no_pin %}
+    <p class="login-msg">手机访问还没有开启。</p>
+    <p class="muted">请在电脑上打开系统，进入「系统 → 手机访问」设一个口令，再用手机扫那里的二维码。</p>
+    {% else %}
+    <form method="post" action="/m/login">
+      <input type="hidden" name="next" value="{{ next or '/m' }}">
+      <label for="pin">访问口令</label>
+      <input id="pin" name="pin" type="password" inputmode="numeric" pattern="[0-9]*" autocomplete="current-password" autofocus required>
+      {% if error %}<div class="login-err">{{ error }}</div>{% endif %}
+      <button type="submit" class="btn-big">进入</button>
+    </form>
+    <p class="muted">输入一次，这台手机会记住 180 天。</p>
+    {% endif %}
+  </div>
+</body>
+</html>

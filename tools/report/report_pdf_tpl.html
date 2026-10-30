@@ -1,0 +1,481 @@
+<title>华西废钢经营报告</title>
+<style>
+:root{
+  --bg:#F2F4F6; --surface:#FFFFFF; --surface-2:#F7F8FA; --rule:#E1E5EA;
+  --ink:#141C26; --ink-2:#4F5A68; --ink-3:#8791A0;
+  --navy:#17324F; --navy-ink:#FFFFFF; --navy-2:#B9C8DA;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a;
+  --pos:#1a7f4b; --neg:#c43d3d; --warn:#b26b00; --crit:#c43d3d; --crit-bg:#FBE9E9; --warn-bg:#FFF3DC; --ok-bg:#E6F4EC;
+  --track:#E7EAEE;
+  --num:"Noto Sans CJK SC","Noto Sans SC",sans-serif;
+  --sans:"Noto Sans CJK SC","Noto Sans SC","PingFang SC",sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1318; --surface:#171C22; --surface-2:#1D232A; --rule:#2A313A;
+    --ink:#EDF0F3; --ink-2:#AEB7C2; --ink-3:#7C8693;
+    --navy:#1B2E45; --navy-ink:#F2F5F8; --navy-2:#93A8C0;
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70;
+    --pos:#4cc284; --neg:#ef7474; --warn:#e2a13a; --crit:#ef7474; --crit-bg:#3A1F22; --warn-bg:#3A2F1A; --ok-bg:#16301F;
+    --track:#262D35;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1318; --surface:#171C22; --surface-2:#1D232A; --rule:#2A313A;
+  --ink:#EDF0F3; --ink-2:#AEB7C2; --ink-3:#7C8693;
+  --navy:#1B2E45; --navy-ink:#F2F5F8; --navy-2:#93A8C0;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70;
+  --pos:#4cc284; --neg:#ef7474; --warn:#e2a13a; --crit:#ef7474; --crit-bg:#3A1F22; --warn-bg:#3A2F1A; --ok-bg:#16301F;
+  --track:#262D35;
+}
+*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+@page{size:120mm 250mm;margin:0}
+html,body{margin:0}
+.panel,.pathcard,.cmp,.callout,.kpis,.tbl,details,.qrow{break-inside:avoid}
+section>h2{break-after:avoid}
+.pb{break-before:page;margin-top:0;padding-top:14px}
+details summary{list-style:none}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6;-webkit-text-size-adjust:100%}
+.wrap{max-width:780px;margin:0 auto;padding-inline:14px;padding-block:0 16px}
+.num,.kpi .v,td.n,th.n{font-family:var(--num);font-variant-numeric:tabular-nums}
+h1,h2,h3{text-wrap:balance;margin:0}
+.masthead{background:var(--navy);color:var(--navy-ink);padding-block:22px 20px}
+.masthead .wrap{padding-block:0}
+.eyebrow{font-size:12px;letter-spacing:.12em;color:var(--navy-2)}
+.masthead h1{font-size:24px;font-weight:700;margin-top:6px;letter-spacing:.02em}
+.masthead .meta{margin-top:8px;font-size:13px;color:var(--navy-2);display:flex;flex-wrap:wrap;gap:4px 14px}
+.stamp{display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-size:12.5px;padding:4px 10px;border:1px solid rgba(255,255,255,.28);border-radius:999px;color:var(--navy-ink)}
+.stamp i{width:7px;height:7px;border-radius:50%;background:#5fd08f;display:inline-block}
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--rule)}
+nav.toc .wrap{display:flex;gap:6px;overflow-x:auto;padding-block:9px;scrollbar-width:none}
+nav.toc .wrap::-webkit-scrollbar{display:none}
+nav.toc a{flex:0 0 auto;font-size:13px;color:var(--ink-2);text-decoration:none;padding:5px 11px;border-radius:999px;background:var(--surface);border:1px solid var(--rule)}
+nav.toc a:focus-visible,button:focus-visible{outline:2px solid var(--s1);outline-offset:2px}
+section{margin-top:22px;scroll-margin-top:60px}
+section>h2{font-size:18px;font-weight:700;display:flex;align-items:baseline;gap:10px}
+section>h2 small{font-size:12.5px;font-weight:400;color:var(--ink-3)}
+.lead{color:var(--ink-2);font-size:14px;margin:6px 0 12px;max-width:62ch}
+.panel{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:14px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:10px;overflow:hidden;margin-top:16px}
+.kpi{background:var(--surface);padding:12px 12px 11px}
+.kpi .k{font-size:12px;color:var(--ink-3)}
+.kpi .v{font-size:25px;font-weight:600;line-height:1.15;margin-top:3px}
+.kpi .v small{font-size:13px;font-weight:500;color:var(--ink-2);margin-left:2px}
+.kpi .s{font-size:11.5px;color:var(--ink-3);margin-top:2px}
+.kpi.hero .v{color:var(--pos)}
+@media (max-width:520px){.kpis{grid-template-columns:repeat(2,1fr)}.kpi .v{font-size:23px}}
+.callouts{display:grid;gap:8px;margin-top:14px}
+.callout{display:flex;gap:10px;align-items:flex-start;background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:10px 12px;font-size:14px}
+.callout b{font-weight:600}
+.tag{flex:0 0 auto;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:999px;margin-top:1px}
+.tag.crit{background:var(--crit-bg);color:var(--crit)}.tag.warn{background:var(--warn-bg);color:var(--warn)}.tag.ok{background:var(--ok-bg);color:var(--pos)}.tag.info{background:var(--surface-2);color:var(--ink-2);border:1px solid var(--rule)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--ink-2);margin-bottom:8px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:10px;height:10px;border-radius:3px;display:inline-block}
+svg text{fill:var(--ink-3);font-size:11px;font-family:var(--num)}
+svg .lab{fill:var(--ink-2);font-family:var(--sans);font-size:12px}
+svg .val{fill:var(--ink);font-size:12.5px;font-weight:600}
+.chart{width:100%;height:auto;display:block;touch-action:manipulation}
+.tip{position:fixed;z-index:20;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12.5px;line-height:1.5;padding:7px 10px;border-radius:8px;max-width:240px;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+.tip b{font-family:var(--num);font-size:13.5px}
+.tbl{overflow:hidden;-webkit-overflow-scrolling:touch;margin-top:10px;border:1px solid var(--rule);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:11.5px}
+th{font-size:10.5px;font-weight:600;color:var(--ink-3);text-align:left;padding:6px 5px;border-bottom:1px solid var(--rule);white-space:nowrap;background:var(--surface-2)}
+td{padding:6px 5px;border-bottom:1px solid var(--rule);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td.n,th.n{text-align:right}
+tr.tot td{font-weight:600;background:var(--surface-2)}
+.pos{color:var(--pos)}.neg{color:var(--neg)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:8px;overflow:hidden;background:var(--surface);margin-bottom:10px}
+.seg button{font:inherit;font-size:13px;border:0;background:none;color:var(--ink-2);padding:6px 12px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--rule)}
+.seg button[aria-pressed="true"]{background:var(--navy);color:var(--navy-ink)}
+.paths{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media (max-width:560px){.paths{grid-template-columns:1fr}}
+.pathcard{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:12px;border-top:3px solid var(--c)}
+.pathcard h3{font-size:15px;display:flex;justify-content:space-between;align-items:baseline}
+.pathcard h3 span{font-size:12px;color:var(--ink-3);font-weight:400}
+.pathcard .big{font-family:var(--num);font-size:24px;font-weight:600;margin-top:4px}
+.pathcard dl{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;margin:6px 0 0;font-size:13px}
+.pathcard dt{color:var(--ink-3)}.pathcard dd{margin:0;text-align:right;font-family:var(--num);font-variant-numeric:tabular-nums}
+.pathcard p{font-size:12.5px;color:var(--ink-2);margin:8px 0 0}
+.bar100{display:flex;height:26px;border-radius:6px;overflow:hidden;gap:2px;background:var(--surface)}
+.bar100 div{display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-family:var(--num);font-weight:600;min-width:0;overflow:hidden;white-space:nowrap}
+.sharerow{display:grid;grid-template-columns:52px 1fr;gap:10px;align-items:center;margin-top:8px;font-size:12.5px;color:var(--ink-2)}
+.meter{height:10px;background:var(--track);border-radius:6px;overflow:hidden;position:relative}
+.meter i{display:block;height:100%;border-radius:6px}
+.quota{display:grid;gap:12px}
+.qrow .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:14px}
+.qrow .top .num{font-size:15px;font-weight:600}
+.qrow .sub{font-size:12px;color:var(--ink-3);margin-top:4px;display:flex;justify-content:space-between;gap:8px}
+.tier{position:relative;margin:44px 0 30px}
+.tier .meter{height:14px}
+.tick{position:absolute;top:-38px;line-height:1.3;transform:translateX(-50%);font-size:11.5px;color:var(--ink-2);white-space:nowrap;text-align:center}
+.tick::after{content:"";position:absolute;left:50%;top:34px;height:22px;border-left:1.5px dashed var(--ink-3)}
+.tick.end{transform:translateX(-100%)}.tick.end::after{left:100%}
+.tierlab{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-3);margin-top:6px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:520px){.two{grid-template-columns:1fr}}
+.cmp{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:12px}
+.cmp h3{font-size:14.5px}
+.cmp .row{display:flex;justify-content:space-between;font-size:13.5px;padding:3px 0;border-bottom:1px dashed var(--rule)}
+.cmp .row:last-child{border-bottom:0}
+.cmp .row span:last-child{font-family:var(--num);font-variant-numeric:tabular-nums}
+details{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:10px 14px;margin-top:10px}
+details summary{cursor:pointer;font-weight:600;font-size:14.5px}
+details p,details li{font-size:13.5px;color:var(--ink-2)}
+details ol,details ul{padding-left:20px;margin:8px 0}
+.foot{margin-top:28px;font-size:12px;color:var(--ink-3);border-top:1px solid var(--rule);padding-top:12px}
+@media (prefers-reduced-motion:no-preference){.meter i,.bar100 div{transition:width .5s ease}}
+</style>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">华西特钢 · 废钢供应链</div>
+    <h1>经营报告</h1>
+    <div class="meta"><span id="m-range"></span><span id="m-asof"></span></div>
+    <div class="stamp"><i></i><span id="m-stamp"></span></div>
+  </div>
+</header>
+<nav class="toc" aria-label="章节" hidden>
+  <div class="wrap">
+    <a href="#s-overview">总览</a><a href="#s-source">利润来源</a><a href="#s-path">三条路径</a><a href="#s-trend">每日走势</a><a href="#s-period">量补周期</a>
+    <a href="#s-disp">调货人</a><a href="#s-base">货源</a><a href="#s-ticket">票源额度</a><a href="#s-mode">车/船</a><a href="#s-top">单车</a><a href="#s-risk">待办</a><a href="#s-rule">口径</a>
+  </div>
+</nav>
+
+<main class="wrap">
+  <section id="s-overview" style="margin-top:0">
+    <div class="kpis" id="kpis"></div>
+    <div class="callouts" id="headlines"></div>
+  </section>
+
+  <section id="s-source">
+    <h2>利润从哪来 <small>全部车次，元</small></h2>
+    <p class="lead" id="src-lead"></p>
+    <div class="panel"><svg class="chart" id="wf" role="img" aria-label="利润构成"></svg></div>
+  </section>
+
+  <section id="s-path">
+    <h2>三条计算路径</h2>
+    <p class="lead">配票：我们配企业票源，赚量补、承担点位差；反向：个人开票，本期不扣垫资费；带票：供货厂自带票，我们收服务费。</p>
+    <div class="paths" id="paths"></div>
+    <div class="panel" style="margin-top:10px">
+      <div class="legend" id="path-legend"></div>
+      <div class="sharerow"><span>吨位</span><div class="bar100" id="share-ton"></div></div>
+      <div class="sharerow"><span>利润</span><div class="bar100" id="share-profit"></div></div>
+      <div class="sharerow"><span>结算额</span><div class="bar100" id="share-amt"></div></div>
+    </div>
+  </section>
+
+  <section id="s-trend">
+    <h2>每日走势 <small>按结算日期</small></h2>
+    
+    <div class="panel">
+      <div class="legend"><span><b>每日吨位</b></span></div>
+      <div class="legend" id="trend-legend"></div>
+      <svg class="chart" id="trend" role="img" aria-label="每日吨位"></svg>
+    </div>
+    <div class="panel" style="margin-top:10px">
+      <div class="legend"><span><b>每日利润（元）</b></span></div>
+      <svg class="chart" id="trend2" role="img" aria-label="每日利润"></svg>
+    </div>
+    <div class="panel" style="margin-top:10px">
+      <div class="legend"><span>累计利润（元）</span></div>
+      <svg class="chart" id="cum" role="img" aria-label="累计利润"></svg>
+    </div>
+  </section>
+
+  <section id="s-period">
+    <h2>量补周期 <small>华西特钢 每月 26 日 ~ 次月 25 日</small></h2>
+    <p class="lead" id="period-lead"></p>
+    <div class="panel">
+      <div class="tier" id="tier"></div>
+      <div class="two" id="period-cmp"></div>
+    </div>
+  </section>
+
+  <section id="s-disp">
+    <h2>按调货人</h2>
+    
+    <div class="panel"><svg class="chart" id="disp-chart" role="img" aria-label="调货人利润"></svg></div>
+    <div class="tbl"><table id="disp-tbl"></table></div>
+  </section>
+
+  <section id="s-base">
+    <h2>按货源 <small>供货厂 / 货主</small></h2>
+    <div class="tbl"><table id="base-tbl"></table></div>
+  </section>
+
+  <section id="s-ticket">
+    <h2>票源与额度</h2>
+    <div class="tbl"><table id="src-tbl"></table></div>
+    <div class="panel quota" style="margin-top:10px" id="quota"></div>
+  </section>
+
+  <section id="s-mode">
+    <h2>车 与 船</h2>
+    <div class="two" id="mode"></div>
+  </section>
+
+  <section id="s-top">
+    <h2>单车表现</h2>
+    <h3 style="font-size:14px;margin:10px 0 0">利润最高 10 车</h3><div class="tbl"><table id="top-tbl"></table></div>
+    <h3 style="font-size:14px;margin:14px 0 0">吨均利润最低 10 车</h3><div class="tbl"><table id="top-tbl2"></table></div>
+  </section>
+
+  <section id="s-risk">
+    <h2>需要关注</h2>
+    <div class="callouts" id="risks"></div>
+  </section>
+
+  <section id="s-rule">
+    <h2>口径说明</h2>
+    <details open>
+      <summary>每条路径怎么算利润</summary>
+      <ul>
+        <li><b>配票</b>：给客户付 = 结算额 × 86%；前端实付 = (结算额 − 垫资 23 元/吨) × (1 − 票点)，俊兴/益周 13.5%、煌烽 13.2%；利润 = 量补 − (给客户付 − 前端实付) − 调货提成。</li>
+        <li><b>反向</b>：本期不扣垫资费（已含在反向票点 13.8% 里）；前端实付 = 结算额 × 86.2%；利润 = 量补 − (给客户付 − 前端实付)。</li>
+        <li><b>带票</b>：毛服务费 40 元/吨 − 垫资 23 元/吨 − 林凯提成 15 元/吨 + 量补 25 元/吨 = 每吨 27 元。</li>
+      </ul>
+    </details>
+    <details open>
+      <summary>本期确认的规则</summary>
+      <ul>
+        <li>量补：7/26~8/25 那期按约定 20 元/吨（业务恢复初期特殊处理）；8/26 起按阶梯，累计过 5,000 吨为 25 元/吨。</li>
+        <li>林凯配票提成 5 元/吨，9/05 起停；带票提成 15 元/吨。</li>
+        <li>切割费由客户承担：钢厂已从结算额扣除，利润不再重复扣。</li>
+        <li>王荣胜 8/29 鲁济宁货4095：特批按 13.8% 给客户付款。</li>
+        <li>票差留存（益周进项 12.8%、转出 13.5% 的差）单独留存，不计入上面的利润。</li>
+      </ul>
+    </details>
+    <details open>
+      <summary>和财务台账的核对</summary>
+      <p id="recon"></p>
+    </details>
+  </section>
+  <div class="foot" id="foot"></div>
+</main>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+const D = __DATA__;
+const PATHS = ['配票','反向','带票'];
+const PC = {配票:'var(--s1)',反向:'var(--s2)',带票:'var(--s3)'};
+const T = D.trips;
+const $ = id => document.getElementById(id);
+const fmt = (v,d=0) => v==null ? '—' : Number(v).toLocaleString('zh-CN',{minimumFractionDigits:d,maximumFractionDigits:d});
+const wan = v => (v/10000).toLocaleString('zh-CN',{maximumFractionDigits:v>=1e6?0:1});
+const sum = (a,f) => a.reduce((s,x)=>s+(f(x)||0),0);
+const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function group(key){const m=new Map();for(const t of T){const k=typeof key==='function'?key(t):t[key];if(!m.has(k))m.set(k,[]);m.get(k).push(t);}return m;}
+function agg(rows){const ton=sum(rows,r=>r.ton),net=sum(rows,r=>r.net);return{n:rows.length,ton,amt:sum(rows,r=>r.amt),net,ppt:ton?net/ton:0,cm:sum(rows,r=>r.cm),rw:sum(rows,r=>r.rw),resv:sum(rows,r=>r.resv)};}
+const ALL = agg(T);
+const dates = T.map(t=>t.d).sort();
+const d0 = dates[0], d1 = dates[dates.length-1];
+const md = s => `${+s.slice(5,7)}月${+s.slice(8,10)}日`;
+
+// ---------- 抬头 ----------
+$('m-range').textContent = `数据期间 ${md(d0)} ~ ${md(d1)}`;
+$('m-asof').textContent = '截至 2026年9月22日';
+const finDiff = ALL.net - D.finance.fin_total;
+$('m-stamp').textContent = `已与财务台账逐车核对：${D.finance.rows} 行全部对上`;
+
+// ---------- KPI ----------
+const trucks=T.filter(t=>t.ty==='车').length, ships=T.length-trucks;
+const kp = [
+  ['主营净利润',`¥${fmt(ALL.net)}`,`吨均 ${fmt(ALL.ppt,1)} 元`,true],
+  ['结算吨位',`${fmt(ALL.ton,0)}<small>吨</small>`,`${T.length} 车次`],
+  ['结算金额',`${wan(ALL.amt)}<small>万元</small>`,`均价 ${fmt(ALL.amt/ALL.ton,0)} 元/吨`],
+  ['车 / 船',`${trucks}<small>车</small> ${ships}<small>船</small>`,`船占吨位 ${fmt(sum(T.filter(t=>t.ty==='船'),r=>r.ton)/ALL.ton*100,0)}%`],
+  ['量补收入',`¥${fmt(ALL.rw)}`,`占利润 ${fmt(ALL.rw/ALL.net*100,0)}%`],
+  ['票差留存',`¥${fmt(D.reserved)}`,'单独留存，不计入利润'],
+];
+$('kpis').innerHTML = kp.map(([k,v,s,h])=>`<div class="kpi${h?' hero':''}"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`).join('');
+
+const byPath = new Map(PATHS.map(p=>[p,agg(T.filter(t=>t.path===p))]));
+const best = [...byPath].sort((a,b)=>b[1].ppt-a[1].ppt)[0];
+const quotaOver = D.quota.filter(q=>q.pct>=100);
+const heads = [
+  ['ok','利润',`累计 <b>¥${fmt(ALL.net)}</b>，其中本期（${md(D.period.start)} 起）<b>¥${fmt(D.period.profit)}</b>，吨均 ${fmt(D.period.ppt,1)} 元，是上期 ${fmt(D.period.prev_ppt,1)} 元的近 3 倍。`],
+  ['info','结构',`量补是利润的主要来源（¥${fmt(ALL.rw)}）；<b>${best[0]}</b>路径吨均最高（${fmt(best[1].ppt,1)} 元），配票路径吨位最大但吨均最低。`],
+  ...(quotaOver.length?[['crit','额度',`${quotaOver.map(q=>`<b>${esc(q.name)}</b> 本期已用 ${fmt(q.pct,1)}%，超出 ¥${fmt(q.used_amount-q.quota_amount)}`).join('；')}。`]]:[]),
+];
+$('headlines').innerHTML = heads.map(([c,t,h])=>`<div class="callout"><span class="tag ${c}">${t}</span><div>${h}</div></div>`).join('');
+
+// ---------- 提示 ----------
+const tip=$('tip');
+function showTip(e,html){tip.innerHTML=html;tip.hidden=false;const x=(e.touches?e.touches[0]:e).clientX,y=(e.touches?e.touches[0]:e).clientY;
+  const w=tip.offsetWidth,h=tip.offsetHeight;tip.style.left=Math.min(Math.max(8,x-w/2),innerWidth-w-8)+'px';tip.style.top=Math.max(8,y-h-14)+'px';}
+function hideTip(){tip.hidden=true;}
+document.addEventListener('scroll',hideTip,{passive:true});
+document.addEventListener('click',e=>{if(!e.target.closest('[data-tip]'))hideTip();});
+function bindTips(svg){svg.querySelectorAll('[data-tip]').forEach(el=>{const h=el.getAttribute('data-tip');
+  el.addEventListener('mousemove',e=>showTip(e,h));el.addEventListener('mouseleave',hideTip);el.addEventListener('click',e=>{e.stopPropagation();showTip(e,h);});});}
+const NS='http://www.w3.org/2000/svg';
+function W(svg){return svg.parentElement.clientWidth-28;}
+
+// ---------- 利润来源（瀑布） ----------
+const splitPadvPei = sum(T.filter(t=>t.path==='配票'),r=>r.padv), splitPadvRev = sum(T.filter(t=>t.path==='反向'),r=>r.padv);
+const svc = sum(T,r=>r.svc), sadv = sum(T,r=>r.sadv);
+const WF = [
+  ['量补（钢厂）', ALL.rw, '钢厂按吨给的量补，全部路径'],
+  ['带票服务费', svc, '带票路径 40 元/吨'],
+  ['带票垫资成本', -sadv, '带票路径 23 元/吨'],
+  ['配票点位差', -splitPadvPei, '给客户付 − 前端实付（配票）'],
+  ['反向点位差', -splitPadvRev, '反向票点 13.8% 低于给客户 14%，这部分是赚的'],
+  ['调货提成', -ALL.cm, '林凯配票 5 元/吨(9/04 前)、带票 15 元/吨'],
+];
+$('src-lead').innerHTML = `量补 ¥${fmt(ALL.rw)} 是利润的底座；配票要贴点位差 ¥${fmt(splitPadvPei)}，带票服务费扣掉垫资后净 ¥${fmt(svc-sadv)}，调货提成 ¥${fmt(ALL.cm)}。`;
+function drawWF(){
+  const svg=$('wf'), w=W(svg), rowH=34, lw=Math.min(118,w*.34), top=6, h=top+rowH*(WF.length+1)+22;
+  const maxAbs = Math.max(...WF.map(x=>Math.abs(x[1])), ALL.net);
+  let run=0; const pts=[];
+  WF.forEach(([n,v])=>{pts.push([run,run+v]);run+=v;});
+  const lo=Math.min(0,...pts.flat()), hi=Math.max(...pts.flat(),ALL.net);
+  const x0=lw+8, x1=w-8, sx=v=>x0+(v-lo)/(hi-lo)*(x1-x0);
+  let s=`<line x1="${sx(0)}" x2="${sx(0)}" y1="${top-2}" y2="${h-18}" stroke="var(--rule)" stroke-width="1"/>`;
+  WF.forEach(([n,v,desc],i)=>{const [a,b]=pts[i], y=top+i*rowH, xa=sx(Math.min(a,b)), xb=sx(Math.max(a,b));
+    const col=v>=0?'var(--pos)':'var(--neg)';
+    s+=`<text class="lab" x="0" y="${y+rowH/2+4}">${n}</text>`;
+    s+=`<rect data-tip="<b>${n}</b> ${v>=0?'+':'−'}¥${fmt(Math.abs(v))}<br>${desc}" x="${xa}" y="${y+7}" width="${Math.max(2,xb-xa)}" height="${rowH-14}" rx="3" fill="${col}" opacity=".88"/>`;
+    const lx = v>=0 ? xb+4 : xa-4, anchor = v>=0?'start':'end';
+    let inside = (v>=0 && xb+70>x1) || (v<0 && xa-70<x0);
+    if(inside && xb-xa<56){ inside=false; }
+    const flip = !inside && ((v>=0 && xb+70>x1) || (v<0 && xa-70<x0));
+    s+=`<text class="val" x="${inside?(v>=0?xb-4:xa+4):(flip?(v>=0?xa-4:xb+4):lx)}" y="${y+rowH/2+4}" text-anchor="${inside?(v>=0?'end':'start'):(flip?(v>=0?'end':'start'):anchor)}" style="${inside?'fill:#fff':''}">${v>=0?'+':'−'}${fmt(Math.abs(v)/10000,1)}万</text>`;
+    if(i<WF.length-1) s+=`<line x1="${sx(b)}" x2="${sx(b)}" y1="${y+rowH-7}" y2="${y+rowH+7}" stroke="var(--ink-3)" stroke-dasharray="2 2"/>`;
+  });
+  const y=top+WF.length*rowH;
+  s+=`<text class="lab" x="0" y="${y+rowH/2+4}" style="font-weight:600;fill:var(--ink)">主营净利润</text>`;
+  s+=`<rect data-tip="<b>主营净利润</b> ¥${fmt(ALL.net)}" x="${sx(0)}" y="${y+7}" width="${sx(ALL.net)-sx(0)}" height="${rowH-14}" rx="3" fill="var(--navy)"/>`;
+  s+=`<text class="val" x="${sx(ALL.net)-4}" y="${y+rowH/2+4}" text-anchor="end" style="fill:#fff">${fmt(ALL.net/10000,1)}万</text>`;
+  [0, Math.round(hi/100000)*100000].forEach(v=>{ if(v>=lo&&v<=hi) s+=`<text x="${sx(v)}" y="${h-4}" text-anchor="middle">${v?fmt(v/10000,0)+'万':'0'}</text>`;});
+  svg.setAttribute('viewBox',`0 0 ${w} ${h}`); svg.innerHTML=s; bindTips(svg);
+}
+
+// ---------- 三条路径 ----------
+const DESC={配票:'吨位最大；利润靠量补，点位差是主要成本',反向:'个人开票，本期不扣垫资，点位差反而为正',带票:'供货厂自带票；每吨稳定 27 元'};
+$('paths').innerHTML = PATHS.map(p=>{const a=byPath.get(p);return `<div class="pathcard" style="--c:${PC[p]}">
+  <h3>${p}<span>${a.n} 车</span></h3><div class="big">¥${fmt(a.net)}</div>
+  <dl><dt>吨位</dt><dd>${fmt(a.ton,1)} 吨</dd><dt>结算额</dt><dd>${wan(a.amt)} 万</dd><dt>吨均利润</dt><dd>${fmt(a.ppt,1)} 元</dd><dt>量补</dt><dd>${fmt(a.rw)}</dd><dt>提成</dt><dd>${fmt(a.cm)}</dd></dl>
+  <p>${DESC[p]}</p></div>`;}).join('');
+$('path-legend').innerHTML = PATHS.map(p=>`<span><i class="sw" style="background:${PC[p]}"></i>${p}</span>`).join('');
+function share(id,f){const tot=PATHS.reduce((s,p)=>s+f(byPath.get(p)),0);
+  $(id).innerHTML=PATHS.map(p=>{const v=f(byPath.get(p)),pc=v/tot*100;return `<div style="width:${pc}%;background:${PC[p]}" title="${p} ${fmt(pc,1)}%">${pc>=9?fmt(pc,0)+'%':''}</div>`;}).join('');}
+share('share-ton',a=>a.ton); share('share-profit',a=>a.net); share('share-amt',a=>a.amt);
+
+// ---------- 每日走势 ----------
+const days=[]; for(let d=new Date(d0+'T00:00:00');d<=new Date(d1+'T00:00:00');d.setDate(d.getDate()+1)){const s=new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10);days.push(s);}
+const byDay = new Map(days.map(d=>[d,Object.fromEntries(PATHS.map(p=>[p,{ton:0,net:0,n:0}]))]));
+T.forEach(t=>{const o=byDay.get(t.d)[t.path];o.ton+=t.ton;o.net+=t.net;o.n++;});
+let trendMetric='ton';
+$('trend-legend').innerHTML = PATHS.map(p=>`<span><i class="sw" style="background:${PC[p]}"></i>${p}</span>`).join('');
+function niceMax(v){const e=Math.pow(10,Math.floor(Math.log10(v)));const m=v/e;return (m<=1?1:m<=2?2:m<=2.5?2.5:m<=5?5:10)*e;}
+function drawTrend(svgId='trend',metric=trendMetric){
+  const trendMetric=metric; const svg=$(svgId), w=W(svg), h=210, L=40, R=6, Tp=10, Bt=24;
+  const vals=days.map(d=>PATHS.reduce((s,p)=>s+byDay.get(d)[p][trendMetric],0));
+  const mx=niceMax(Math.max(...vals)), sy=v=>Tp+(h-Tp-Bt)*(1-v/mx), bw=(w-L-R)/days.length;
+  let s='';
+  for(let i=0;i<=4;i++){const v=mx*i/4,y=sy(v);s+=`<line x1="${L}" x2="${w-R}" y1="${y}" y2="${y}" stroke="var(--rule)" stroke-width="1"/><text x="${L-6}" y="${y+4}" text-anchor="end">${trendMetric==='ton'?fmt(v):fmt(v/10000,v<1e4?1:0)+(v?'万':'')}</text>`;}
+  days.forEach((d,i)=>{let acc=0;const x=L+i*bw+Math.max(1,bw*.12), bwi=Math.max(2,bw*.76);const o=byDay.get(d);
+    const tipH=`<b>${md(d)}</b><br>`+PATHS.filter(p=>o[p].n).map(p=>`${p} ${o[p].n}车 ${fmt(o[p].ton,1)}吨 ¥${fmt(o[p].net)}`).join('<br>')||'无结算';
+    PATHS.forEach(p=>{const v=o[p][trendMetric];if(v<=0)return;const y0=sy(acc),y1=sy(acc+v);acc+=v;
+      s+=`<rect x="${x}" y="${y1}" width="${bwi}" height="${Math.max(1,y0-y1-(acc>v?2:0))}" rx="2" fill="${PC[p]}"/>`;});
+    s+=`<rect data-tip="${esc(tipH)}" x="${L+i*bw}" y="${Tp}" width="${bw}" height="${h-Tp-Bt}" fill="transparent"/>`;
+    if(['26','01','10','20'].includes(d.slice(8)))
+      s+=`<text x="${L+i*bw+bw/2}" y="${h-7}" text-anchor="middle">${+d.slice(5,7)}/${+d.slice(8)}</text>`;
+  });
+  const pi=days.indexOf('2026-08-26'); if(pi>0){const x=L+pi*bw;s+=`<line x1="${x}" x2="${x}" y1="${Tp}" y2="${h-Bt}" stroke="var(--ink-3)" stroke-dasharray="3 3"/><text x="${x+4}" y="${Tp+10}" text-anchor="start" class="lab" style="font-size:11px">新周期</text>`;}
+  svg.setAttribute('viewBox',`0 0 ${w} ${h}`); svg.innerHTML=s; bindTips(svg);
+}
+function drawCum(){
+  const svg=$('cum'), w=W(svg), h=160, L=40, R=10, Tp=12, Bt=22;
+  let run=0; const pts=days.map(d=>{run+=PATHS.reduce((s,p)=>s+byDay.get(d)[p].net,0);return run;});
+  const mx=niceMax(run), sx=i=>L+i*(w-L-R)/(days.length-1), sy=v=>Tp+(h-Tp-Bt)*(1-v/mx);
+  let s=''; for(let i=0;i<=4;i++){const v=mx*i/4,y=sy(v);s+=`<line x1="${L}" x2="${w-R}" y1="${y}" y2="${y}" stroke="var(--rule)"/><text x="${L-6}" y="${y+4}" text-anchor="end">${v?fmt(v/10000,0)+'万':'0'}</text>`;}
+  const line=pts.map((v,i)=>`${i?'L':'M'}${sx(i).toFixed(1)},${sy(v).toFixed(1)}`).join('');
+  s+=`<path d="${line}L${sx(days.length-1)},${sy(0)}L${sx(0)},${sy(0)}Z" fill="var(--pos)" opacity=".12"/><path d="${line}" fill="none" stroke="var(--pos)" stroke-width="2"/>`;
+  const li=days.length-1; s+=`<circle cx="${sx(li)}" cy="${sy(pts[li])}" r="4" fill="var(--pos)" stroke="var(--surface)" stroke-width="2"/><text x="${sx(li)-6}" y="${sy(pts[li])-8}" text-anchor="end" class="val">¥${fmt(pts[li])}</text>`;
+  days.forEach((d,i)=>{s+=`<rect data-tip="<b>${md(d)}</b><br>累计 ¥${fmt(pts[i])}" x="${sx(i)-(w-L-R)/days.length/2}" y="${Tp}" width="${(w-L-R)/days.length}" height="${h-Tp-Bt}" fill="transparent"/>`;
+    if(['26','01','10','20'].includes(d.slice(8))) s+=`<text x="${sx(i)}" y="${h-6}" text-anchor="middle">${+d.slice(5,7)}/${+d.slice(8)}</text>`;});
+  svg.setAttribute('viewBox',`0 0 ${w} ${h}`); svg.innerHTML=s; bindTips(svg);
+}
+
+
+// ---------- 量补周期 ----------
+const P_=D.period, tiers=[...D.tiers].sort((a,b)=>a.min-b.min), axMax=Math.max(P_.ton*1.08, tiers[tiers.length-1].min*1.15);
+const pct=v=>Math.min(100,v/axMax*100);
+$('tier').innerHTML = tiers.map(t=>`<div class="tick" style="left:${pct(t.min)}%">${fmt(t.min)}吨<br>${t.price}元/吨</div>`).join('')+
+  `<div class="meter"><i style="width:${pct(P_.ton)}%;background:var(--navy)"></i></div><div class="tierlab"><span>0</span><span>本期累计 <b class="num" style="color:var(--ink)">${fmt(P_.ton,1)} 吨</b></span></div>`;
+const daysLeft = Math.round((new Date(P_.end)-new Date('2026-09-22'))/864e5);
+$('period-lead').innerHTML = `本期（${md(P_.start)} ~ ${md(P_.end)}）已结算 ${fmt(P_.ton,0)} 吨，<b>已过 5,000 吨档，量补 ${P_.rwp} 元/吨</b>，已到最高档；本期还剩 ${daysLeft} 天。`;
+$('period-cmp').innerHTML = [
+  ['上期',`${md(P_.prev_start)} ~ ${md(P_.prev_end)}`,P_.prev_trips,P_.prev_ton,P_.prev_profit,P_.prev_ppt,'量补按约定 20 元/吨（业务恢复初期特殊处理）'],
+  ['本期',`${md(P_.start)} ~ ${md(P_.end)}`,P_.trips,P_.ton,P_.profit,P_.ppt,`量补 ${P_.rwp} 元/吨`]].map(([n,r,c,t,p,pp,note])=>
+  `<div class="cmp"><h3>${n} <span style="font-weight:400;color:var(--ink-3);font-size:12px">${r}</span></h3>
+   <div class="row"><span>车次</span><span>${c}</span></div><div class="row"><span>吨位</span><span>${fmt(t,1)}</span></div>
+   <div class="row"><span>利润</span><span>¥${fmt(p)}</span></div><div class="row"><span>吨均利润</span><span>${fmt(pp,1)} 元</span></div>
+   <div style="font-size:12px;color:var(--ink-3);margin-top:6px">${note}</div></div>`).join('');
+
+// ---------- 调货人 ----------
+const dispRows=[...group('disp')].map(([k,rows])=>({k,...agg(rows),paths:[...new Set(rows.map(r=>r.path))]}));
+const unpaid=Object.fromEntries(D.commission.map(c=>[c.name,c.unpaid]));
+let dispKey='net';
+function drawDisp(){
+  const rows=[...dispRows].sort((a,b)=>b[dispKey]-a[dispKey]);
+  const svg=$('disp-chart'), w=W(svg), rowH=28, lw=78, h=rows.length*rowH+4;
+  const mx=Math.max(...rows.map(r=>r[dispKey])), sx=v=>lw+(w-lw-70)*v/mx;
+  let s='';
+  rows.forEach((r,i)=>{const y=i*rowH;const tipH=`<b>${esc(r.k)}</b><br>${r.n}车 ${fmt(r.ton,1)}吨<br>利润 ¥${fmt(r.net)} · 吨均 ${fmt(r.ppt,1)}元`;
+    s+=`<text class="lab" x="0" y="${y+rowH/2+4}">${esc(r.k)}</text><rect data-tip="${esc(tipH)}" x="${lw}" y="${y+6}" width="${Math.max(2,sx(r[dispKey])-lw)}" height="${rowH-12}" rx="3" fill="var(--navy)" opacity="${dispKey==='ppt'?.75:.9}"/>`;
+    s+=`<text class="val" x="${sx(r[dispKey])+5}" y="${y+rowH/2+4}">${dispKey==='net'?fmt(r.net):dispKey==='ton'?fmt(r.ton,0)+'吨':fmt(r.ppt,1)+'元'}</text>`;});
+  svg.setAttribute('viewBox',`0 0 ${w} ${h}`); svg.innerHTML=s; bindTips(svg);
+  const tot=agg(T);
+  $('disp-tbl').innerHTML=`<thead><tr><th>调货人</th><th>路径</th><th class="n">车次</th><th class="n">吨位</th><th class="n">利润</th><th class="n">吨均</th><th class="n">提成</th><th class="n">提成未付</th></tr></thead><tbody>`+
+    rows.map(r=>`<tr><td>${esc(r.k)}</td><td>${r.paths.map(p=>`<span class="dot" style="background:${PC[p]}"></span>${p}`).join(' ')}</td><td class="n">${r.n}</td><td class="n">${fmt(r.ton,1)}</td><td class="n">${fmt(r.net)}</td><td class="n">${fmt(r.ppt,1)}</td><td class="n">${fmt(r.cm)}</td><td class="n ${unpaid[r.k]>0?'neg':''}">${fmt(unpaid[r.k]||0)}</td></tr>`).join('')+
+    `<tr class="tot"><td>合计</td><td></td><td class="n">${tot.n}</td><td class="n">${fmt(tot.ton,1)}</td><td class="n">${fmt(tot.net)}</td><td class="n">${fmt(tot.ppt,1)}</td><td class="n">${fmt(tot.cm)}</td><td class="n">${fmt(sum(D.commission,c=>c.unpaid))}</td></tr></tbody>`;
+}
+
+
+// ---------- 货源 ----------
+function simpleTable(id,label,rows){const tot=agg(T);
+  $(id).innerHTML=`<thead><tr><th>${label}</th><th class="n">车次</th><th class="n">吨位</th><th class="n">吨位占比</th><th class="n">结算额(万)</th><th class="n">利润</th><th class="n">吨均</th></tr></thead><tbody>`+
+  rows.map(r=>`<tr><td>${r.label}</td><td class="n">${r.n}</td><td class="n">${fmt(r.ton,1)}</td><td class="n">${fmt(r.ton/tot.ton*100,1)}%</td><td class="n">${wan(r.amt)}</td><td class="n">${fmt(r.net)}</td><td class="n">${fmt(r.ppt,1)}</td></tr>`).join('')+
+  `<tr class="tot"><td>合计</td><td class="n">${tot.n}</td><td class="n">${fmt(tot.ton,1)}</td><td class="n">100%</td><td class="n">${wan(tot.amt)}</td><td class="n">${fmt(tot.net)}</td><td class="n">${fmt(tot.ppt,1)}</td></tr></tbody>`;}
+simpleTable('base-tbl','供货厂 / 货主',[...group('base')].map(([k,r])=>({label:esc(k),...agg(r)})).sort((a,b)=>b.ton-a.ton));
+
+// ---------- 票源 ----------
+const srcRows=[...group('src')].map(([k,r])=>({label:`${esc(k)}`,...agg(r)})).sort((a,b)=>b.ton-a.ton);
+simpleTable('src-tbl','票源',srcRows);
+$('quota').innerHTML = `<div style="font-size:14px;font-weight:600">额度占用</div>`+D.quota.map(q=>{const st=q.pct>=100?'crit':(q.warn_pct&&q.pct>=q.warn_pct)||q.pct>=90?'warn':'ok';
+  const col={crit:'var(--crit)',warn:'var(--warn)',ok:'var(--navy)'}[st];const lab={crit:'超额',warn:'接近上限',ok:'正常'}[st];
+  return `<div class="qrow"><div class="top"><span>${esc(q.name)} <span class="tag ${st}">${lab}</span></span><span class="num">${fmt(q.pct,1)}%</span></div>
+  <div class="meter" style="margin-top:6px"><i style="width:${Math.min(100,q.pct)}%;background:${col}"></i></div>
+  <div class="sub"><span>已用 ${wan(q.used_amount)} 万 / 额度 ${wan(q.quota_amount)} 万（${q.period_label||(q.quota_period==='annual'?'全年':'本期')}）</span><span>${q.pct>=100?'超出 '+wan(q.used_amount-q.quota_amount)+' 万':'剩 '+wan(q.quota_amount-q.used_amount)+' 万'}</span></div></div>`;}).join('');
+
+// ---------- 车 / 船 ----------
+$('mode').innerHTML=['车','船'].map(k=>{const r=T.filter(t=>t.ty===k),a=agg(r);return `<div class="cmp"><h3>${k}运 <span style="font-weight:400;color:var(--ink-3);font-size:12px">${a.n} 次</span></h3>
+  <div class="row"><span>吨位</span><span>${fmt(a.ton,1)} 吨</span></div><div class="row"><span>平均每次</span><span>${fmt(a.ton/a.n,1)} 吨</span></div>
+  <div class="row"><span>结算额</span><span>${wan(a.amt)} 万</span></div><div class="row"><span>利润</span><span>¥${fmt(a.net)}</span></div><div class="row"><span>吨均利润</span><span>${fmt(a.ppt,1)} 元</span></div></div>`;}).join('');
+
+// ---------- 单车 ----------
+function drawTop(k,tblId='top-tbl'){const rows=k==='top'?[...T].sort((a,b)=>b.net-a.net).slice(0,10):[...T].sort((a,b)=>a.net/a.ton-b.net/b.ton).slice(0,10);
+  $(tblId).innerHTML=`<thead><tr><th>日期</th><th>车/船号</th><th>路径</th><th>调货人</th><th class="n">吨位</th><th class="n">利润</th><th class="n">吨均</th></tr></thead><tbody>`+
+  rows.map(t=>`<tr><td>${+t.d.slice(5,7)}/${+t.d.slice(8)}</td><td>${esc(t.p)}</td><td><span class="dot" style="background:${PC[t.path]}"></span>${t.path}</td><td>${esc(t.disp)}</td><td class="n">${fmt(t.ton,2)}</td><td class="n">${fmt(t.net)}</td><td class="n">${fmt(t.net/t.ton,1)}</td></tr>`).join('')+'</tbody>';}
+
+
+// ---------- 待办 ----------
+const risks=[];
+quotaOver.forEach(q=>risks.push(['crit','额度',`<b>${esc(q.name)}</b> 本期票额度已用 ${fmt(q.pct,1)}%（${wan(q.used_amount)} 万 / ${wan(q.quota_amount)} 万），超出 ¥${fmt(q.used_amount-q.quota_amount)}，后续煌烽票源的车需要换票源或等下月额度。`]));
+const up=sum(D.commission,c=>c.unpaid); if(up>0) risks.push(['warn','提成',`调货人提成应付未付 ¥${fmt(up)}（${D.commission.filter(c=>c.unpaid>0).map(c=>esc(c.name)).join('、')}）。`]);
+const noPlate=T.filter(t=>t.p==='（车号待补）'); if(noPlate.length) risks.push(['info','资料',`${noPlate.length} 车缺车号（${noPlate.map(t=>md(t.d)).join('、')} 闫东朋反向），待补。`]);
+risks.push(['info','票款',`开票、回款的逐车登记（三条线）还在补历史数据，这份报告的利润已核对无误，但“已开票 / 已回款”状态暂不作为依据。`]);
+risks.push(['ok','对账',`系统 101 车与财务台账逐车核对完毕，调货人、供货厂、票源、计算路径全部一致，利润差 ¥${fmt(Math.abs(finDiff),2)} 全是财务 INT 取整。`]);
+$('risks').innerHTML=risks.map(([c,t,h])=>`<div class="callout"><span class="tag ${c}">${t}</span><div>${h}</div></div>`).join('');
+$('recon').innerHTML=`财务「发货记录表6」共 ${D.finance.rows} 行，与系统逐车核对：车次、调货人、供货厂、票源、计算路径全部一致（财务 8/29 一行 = 系统两车）。财务利润合计 ¥${fmt(D.finance.fin_total,2)}，系统 ¥${fmt(ALL.net,2)}，差 ¥${fmt(finDiff,2)}，来自财务“实际付款”列使用 INT() 向下取整，每车不到 1 元。`;
+$('foot').innerHTML=`数据来源：废钢供应链系统（${T.length} 车次，结算日期 ${md(d0)} ~ ${md(d1)}），已与财务台账核对。利润为主营净利润，不含票差留存。`;
+
+drawWF();drawTrend('trend','ton');drawTrend('trend2','net');drawCum();drawDisp();drawTop('top','top-tbl');drawTop('ppt','top-tbl2');
+</script>

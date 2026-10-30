@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block title %}术语与操作对照表{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="toolbar">
+    <input id="gl-q" class="glossary-search" placeholder="搜一搜：词汇、操作或页面名（如 水位 / 批量 / 固化）">
+    <span class="muted" id="gl-count"></span>
+  </div>
+  <div class="muted" style="font-size:12.5px;">
+    系统里有些词是行业黑话、有些是别处叫惯了的名字，对不上。这一页把「你可能怎么叫 / 系统里叫什么 / 在哪」摆在一起。
+    <b>各个页面上的虚线下划线也可以直接把鼠标放上去看解释。</b>
+  </div>
+</div>
+
+<div class="card">
+  <div class="panel-title">一、常见事情怎么做</div>
+  <div class="table-scroll"><table id="gl-task" class="glossary-table">
+    <thead><tr><th style="width:180px;">你想做的事</th><th style="width:230px;">怎么操作</th><th>说明 / 备注</th></tr></thead>
+    <tbody>
+      <tr><td>录一车货</td><td>首页「新建车次」，或车次管理页「+ 新建车次」</td><td>填上车牌，其余按这个车牌的历史自动带出；带不出的（每次都不一样的）留空让你手选。</td></tr>
+      <tr><td>一次录一批（按钢厂结算单）</td><td>车次管理页 →「批量录入（粘贴·自动认列）」</td><td>从 Excel / 结算单整块复制粘贴，系统自动认出每列是什么；认错了可以逐个下拉改。按车号+日期匹配已有车次，找不到的自动新建并推进到「已结算」。列的含义见本页第三节。</td></tr>
+      <tr><td>把车往前推一步</td><td>车次行右侧的「→下一状态」按钮</td><td>状态顺序：已报备 → 已到厂 → 已结算 → 已开票 → 已结案。点的时候会自动填上对应日期（已有日期不覆盖）。</td></tr>
+      <tr><td>一次推多车</td><td>勾选车次 → 上方「批量推进到…」</td><td>可以一次录多车的结算吨位/金额：从 Excel 复制「吨位、金额」两列，粘到第一行吨位框里会自动铺开。</td></tr>
+      <tr><td>录磅重明细（一车多料）</td><td>点车次行 → 先看「车次明细」抽屉；要改就进「详情」→「磅重与结算」</td><td>一车装好几种货型就加几行。净重/结算吨数/金额留空会按 毛重−皮重、净重−扣杂、吨数×单价−切割费 自动算。</td></tr>
+      <tr><td>改某一车的费率（只影响这一车）</td><td>车次详情 →「利润分项」右下「本车费率」</td><td>填了就覆盖档案里的值，清空恢复默认。改的是这一车，不动档案、不影响别的车。</td></tr>
+      <tr><td>把这一车的利润定下来</td><td>车次详情 →「固化快照」</td><td>固化后档案费率以后再改，这一车的数字也不跟着变。对账、月结之前建议固化。</td></tr>
+      <tr><td>登记开票 / 回款批次</td><td>回款追踪页</td><td>一批可以挂多车。首页「资金占用与待办」点进去就是对应的待办车次。</td></tr>
+      <tr><td>看某家票源额度用了多少</td><td>首页看板 →「票源额度水位」</td><td>点票源名字，直接跳到占用它额度的那些车。</td></tr>
+      <tr><td>导出给领导看的报告</td><td>首页 / 统计报表 →「导出经营报告 PDF」</td><td>要 Excel（分期与专题，多个 sheet）用「导出经营报告 Excel」。也可以先点「在线预览」看看再导。</td></tr>
+      <tr><td>导出台账</td><td>车次管理页 →「导出台账」</td><td>一个文件三个 sheet：车次明细 + 磅重明细 + 统计汇总。要当前筛选结果用「导出CSV」。</td></tr>
+      <tr><td>录错的车次想删掉</td><td>点车次行 → 明细抽屉底部「删除」；或车次详情右上「删除」</td><td>删除是进回收站，30 天内能在「系统 → 回收站」按原编号恢复。</td></tr>
+      <tr><td>不想让它算钱、但要留个记录</td><td>车次详情 →「作废」</td><td>作废的车不计入任何统计，但仍留在列表里（标红），不进回收站。</td></tr>
+      <tr><td>改外部费率 / 点位 / 额度</td><td>费率与关系页</td><td>系统按「关旧行 + 开新行」记录，改完之后历史车次按旧值算、新车次按新值算，不会把过去改掉。</td></tr>
+      <tr><td>改链条的计算口径</td><td>链条规则页 →「编辑」→ 计算公式</td><td>保存前会先算一遍"改了之后哪些车、差多少钱"，确认才写库。只影响以后新算的钱，已固化的历史车次不变。</td></tr>
+      <tr><td>调提醒阈值（几天算超期、额度到几成预警…）</td><td>系统页 →「参数设置」</td><td>票源额度预警线、报备超期天数、开票/回款超期天数、账龄分档、车牌自动带出门槛、备份保留份数、回收站天数等。</td></tr>
+      <tr><td>看不懂某个词</td><td>本页；或把鼠标停在页面上带虚线下划线的词上</td><td>同一个词全站一套说法，不会再出现五个页面五种叫法。</td></tr>
+    </tbody>
+  </table></div>
+</div>
+
+<div class="card">
+  <div class="panel-title">二、说法对照（你可能这么说 ↔ 系统里叫什么）</div>
+  <div class="table-scroll"><table id="gl-name" class="glossary-table">
+    <thead><tr><th style="width:200px;">你可能这么说</th><th style="width:250px;">系统里叫什么</th><th>在哪个页面</th></tr></thead>
+    <tbody>
+      <tr><td>批量录入、导入结算单、自动识别列</td><td>批量录入（粘贴·自动认列）</td><td>车次管理页 → 工具栏</td></tr>
+      <tr><td>车次管理、车次列表</td><td>车次管理</td><td><a href="/trips">/trips</a></td></tr>
+      <tr><td>首页、首页看板、概览、大盘</td><td>首页看板</td><td><a href="/">/</a></td></tr>
+      <tr><td>统计报表、报表</td><td>统计报表</td><td><a href="/reports">/reports</a></td></tr>
+      <tr><td>基础档案、档案、主数据</td><td>基础档案</td><td><a href="/archives">/archives</a></td></tr>
+      <tr><td>费率与关系、费率表、点位表</td><td>费率与关系</td><td><a href="/rate_links">/rate_links</a></td></tr>
+      <tr><td>票源额度水位、额度表、票额</td><td>首页看板 →「票源额度水位」面板</td><td><a href="/">首页</a></td></tr>
+      <tr><td>各钢厂结算周期</td><td>首页看板 →「各钢厂结算周期」面板</td><td><a href="/">首页</a></td></tr>
+      <tr><td>经营报告、分期报告、专题报告</td><td>经营报告（在线预览 / PDF / Excel）</td><td><a href="/report">/report</a>、统计报表页按钮</td></tr>
+      <tr><td>链条规则、结算模式、M1/M2…</td><td>链条规则（差价模型 / 服务费模型）</td><td><a href="/chain_rules">/chain_rules</a></td></tr>
+      <tr><td>回款追踪、批次登记</td><td>回款追踪</td><td><a href="/tracking">/tracking</a></td></tr>
+      <tr><td>系统、后台、管理页</td><td>系统</td><td><a href="/system">/system</a></td></tr>
+      <tr><td>户头、主体、我方公司</td><td>户头</td><td>基础档案 → 户头</td></tr>
+      <tr><td>调货人、调货员、业务员</td><td>调货人（链条规则页里那一段叫"调货员"）</td><td>基础档案 → 调货人</td></tr>
+      <tr><td>票源、票源方、票商</td><td>票源方</td><td>基础档案 → 票源方</td></tr>
+      <tr><td>供货厂、加工厂、基地</td><td>供货厂</td><td>基础档案 → 供货厂</td></tr>
+      <tr><td>钢厂、结算对象</td><td>钢厂</td><td>基础档案 → 钢厂</td></tr>
+      <tr><td>配票、反向、自带票、带票带货、直签带票</td><td>结算模式 M1 / M5 / M2~M4（按链条规则分组）</td><td>链条规则页（列表里显示为简写）</td></tr>
+      <tr><td>点位、几个点、税点</td><td>费率（%，在"费率与关系"里按生效时间管理）</td><td>费率与关系</td></tr>
+      <tr><td>扣杂、扣杂率</td><td>扣杂（吨）/ 扣杂率</td><td>车次明细、统计报表·质量</td></tr>
+      <tr><td>冲销、退掉、不算了</td><td>作废（状态，记录还在）</td><td>车次详情右上</td></tr>
+      <tr><td>删掉、清掉</td><td>删除（进回收站，可恢复）</td><td>车次明细抽屉底部</td></tr>
+    </tbody>
+  </table></div>
+</div>
+
+<div class="card">
+  <div class="panel-title">三、术语一句话解释</div>
+  <div class="table-scroll"><table id="gl-term" class="glossary-table">
+    <thead><tr><th style="width:170px;">术语</th><th>一句话解释</th><th style="width:200px;">涉及页面</th></tr></thead>
+    <tbody>
+      <tr><td>结算期</td><td>每月 26 日 ~ 次月 25 日算一个结算期（期号形如 2026-10期）。量补档次、月度票额都按这个窗口算，<b>不是自然月</b>。</td><td>首页、统计报表、经营报告</td></tr>
+      <tr><td>票源额度</td><td>这家票源方在我们这边最多能开多少票（金额）。配票按<b>月度</b>额度（结算期），反向按<b>年度</b>额度（自然年）。</td><td>基础档案 → 票源额度分期；首页水位</td></tr>
+      <tr><td>水位</td><td>额度已经用掉多少的进度条。到预警线转黄、超过 100% 转红。</td><td>首页「票源额度水位」</td></tr>
+      <tr><td>配票（M1）</td><td>用我方的票源方额度开票，赚差价；占月度票额。</td><td>链条规则、车次详情</td></tr>
+      <tr><td>反向（M5）</td><td>票源是自然人、反向开票；占年度票额。</td><td>链条规则、车次详情</td></tr>
+      <tr><td>自带票（M2~M4）</td><td>又叫直签带票：供货方自己有票、自己开，我方只做通道/服务，不占我方票额，只看"票面额 = 含税结算额"。</td><td>首页水位 B 区、经营报告 B 区</td></tr>
+      <tr><td>链条规则</td><td>一车货从供货厂到钢厂走的那条业务链——谁开票、谁垫资、谁付款。车次选了哪条链条，就算哪套钱。</td><td>链条规则页</td></tr>
+      <tr><td>节点 / 计算口径</td><td>链条规则里一个"算钱的口子"（例如"给客户付"按对外点位算）。改节点就是改这条链的计算口径。</td><td>链条规则 → 编辑 → 计算公式</td></tr>
+      <tr><td>垫资费</td><td>我们先把钱垫给供货厂、等国企或钢厂回款才收回来，这段占用资金的成本，按 元/吨 计。</td><td>费率与关系、车次详情利润分项</td></tr>
+      <tr><td>票差留存利润</td><td>经过我方票源方开票才有的一段差额（转出点位 − 进项点位），<b>单独留存，不计入净利润</b>。</td><td>车次详情、经营报告</td></tr>
+      <tr><td>固化 / 固化快照</td><td>把这一车当前的利润数字存下来。固化后档案费率再改，这一车的数字也不跟着变。</td><td>车次详情「固化快照」</td></tr>
+      <tr><td>利润估算</td><td>已固化的车次取固化快照，没固化的按当前档案参数实时算——所以它只是估算，不是最终会计数。</td><td>全站汇总数字</td></tr>
+      <tr><td>应收应付基准</td><td>按链条规则自动算出来的"这车该收多少、该付多少"，用来跟实际开票/打款核对，两者不互相推算。</td><td>车次详情「发票/打款核对」</td></tr>
+      <tr><td>账龄</td><td>这笔待办从起算日（开票看结算日、回款看开票日）到现在过了多少天，用来盯超期。</td><td>首页资金占用、回款追踪</td></tr>
+      <tr><td>混料</td><td>一车里装了好几种货型、拆不开，以钢厂结算单的合计为准。</td><td>车次详情</td></tr>
+      <tr><td>扣杂</td><td>钢厂验货时按杂质比例扣掉的吨位，扣完剩下的才是结算吨位。</td><td>车次明细、统计报表·质量</td></tr>
+      <tr><td>票面额</td><td>发票上的含税金额。自带票的票面额 = 含税结算额，不减垫资费。</td><td>首页水位 B 区、经营报告</td></tr>
+      <tr><td>车牌画像</td><td>这个车牌历史上常走谁家的货、用哪条链条。输入车牌后按历史自动带出（同一取值达到"稳定门槛"才带），变来变去的字段不猜、留给你选。</td><td>车次管理录入时</td></tr>
+      <tr><td>录入默认值</td><td>新建车次时自动填的东西：发货地、只有一个钢厂时的钢厂和户头、接单日期今天。</td><td>车次管理页「默认值」</td></tr>
+      <tr><td>回收站</td><td>删除的车次/档案先放这里，30 天内可按原编号恢复，过期自动清理。作废的车次不在回收站，它还留在列表里。</td><td>系统 → 回收站</td></tr>
+      <tr><td>操作记录（audit）</td><td>每一次修改都记下来：什么时间、改的哪一条、从什么改成什么。</td><td>系统 → 操作记录</td></tr>
+    </tbody>
+  </table></div>
+</div>
+
+<div class="card">
+  <div class="panel-title">四、批量录入的列是什么意思</div>
+  <div class="table-scroll"><table class="glossary-table">
+    <thead><tr><th style="width:170px;">表头</th><th>含义</th></tr></thead>
+    <tbody>
+      <tr><td>日期</td><td>优先当结算日期用；没有单独结算日期时也当接单日期匹配车次。</td></tr>
+      <tr><td>车牌 / 车号</td><td>匹配已有车次的钥匙（车号 + 日期 ±3 天）。匹配不上就自动新建一车。</td></tr>
+      <tr><td>货型</td><td>用简称也能认（如"剪中1"= 剪切中废1）。</td></tr>
+      <tr><td>扣杂(吨)</td><td>钢厂扣掉的杂质吨位。</td></tr>
+      <tr><td>结算吨位</td><td>钢厂认账的吨位。系统会用「吨位 × 单价 ≈ 金额（±2%）」反过来校验，认错了会换一列。</td></tr>
+      <tr><td>单价</td><td>结算单价（元/吨）。</td></tr>
+      <tr><td>切割费</td><td>单独的加工/切割费用。金额与「吨位×单价」的差正好等于它时，系统会认成切割费而不是算进单价。</td></tr>
+      <tr><td>金额</td><td>含税结算金额。一般 = 结算吨位 × 单价（再加切割费）。</td></tr>
+      <tr><td>结算单号</td><td>同一张结算单的多车填同一个号。</td></tr>
+      <tr><td>票源 / 调货人</td><td>决定这车走哪条链条：俊兴/煌烽/益周=配票；"反向-XX"=反向；自带票公司=自带票。</td></tr>
+      <tr><td>单独一行的「/」</td><td>表示和上一行是同一车（一车多料），系统会合成一车两条明细。</td></tr>
+    </tbody>
+  </table></div>
+  <div class="muted" style="font-size:12px;margin-top:8px;">粘贴进去之后，每一列认成什么都可以在下拉里改；右下角「按车号+日期匹配」的结果也会先预览一遍，确认了才写库（写库前自动备份）。</div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function () {
+  const q = document.getElementById('gl-q');
+  const count = document.getElementById('gl-count');
+  const tables = [...document.querySelectorAll('.glossary-table')];
+  const allRows = tables.flatMap(t => [...t.querySelectorAll('tbody tr')]);
+  function apply() {
+    const kw = q.value.trim().toLowerCase();
+    let shown = 0;
+    allRows.forEach(tr => {
+      const hit = !kw || tr.textContent.toLowerCase().includes(kw);
+      tr.hidden = !hit;
+      if (hit) shown++;
+    });
+    tables.forEach(t => {
+      const body = t.querySelector('tbody');
+      const real = [...body.children].filter(r => !(r.classList && r.classList.contains('gl-none')));
+      const none = real.length > 0 && real.every(r => r.hidden);
+      let hint = [...body.children].find(r => r.classList && r.classList.contains('gl-none'));
+      if (none && !hint) {
+        hint = document.createElement('tr');
+        hint.className = 'gl-none';
+        hint.innerHTML = '<td colspan="9" class="empty-hint">没有匹配的行</td>';
+        body.appendChild(hint);
+      } else if (!none && hint) {
+        hint.remove();
+      }
+    });
+    count.textContent = kw ? `匹配 ${shown} 行` : `共 ${allRows.length} 行`;
+  }
+  q.addEventListener('input', apply);
+  apply();
+})();
+</script>
+{% endblock %}

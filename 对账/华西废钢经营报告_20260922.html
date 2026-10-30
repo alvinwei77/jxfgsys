@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body>
+<title>华西废钢经营报告</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&display=swap">
+<style>
+:root{
+  --bg:#F2F4F6; --surface:#FFFFFF; --surface-2:#F7F8FA; --rule:#E1E5EA;
+  --ink:#141C26; --ink-2:#4F5A68; --ink-3:#8791A0;
+  --navy:#17324F; --navy-ink:#FFFFFF; --navy-2:#B9C8DA;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a;
+  --pos:#1a7f4b; --neg:#c43d3d; --warn:#b26b00; --crit:#c43d3d; --crit-bg:#FBE9E9; --warn-bg:#FFF3DC; --ok-bg:#E6F4EC;
+  --track:#E7EAEE;
+  --num:"Barlow Semi Condensed","DIN Alternate","Roboto Condensed",-apple-system,"PingFang SC",sans-serif;
+  --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1318; --surface:#171C22; --surface-2:#1D232A; --rule:#2A313A;
+    --ink:#EDF0F3; --ink-2:#AEB7C2; --ink-3:#7C8693;
+    --navy:#1B2E45; --navy-ink:#F2F5F8; --navy-2:#93A8C0;
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70;
+    --pos:#4cc284; --neg:#ef7474; --warn:#e2a13a; --crit:#ef7474; --crit-bg:#3A1F22; --warn-bg:#3A2F1A; --ok-bg:#16301F;
+    --track:#262D35;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1318; --surface:#171C22; --surface-2:#1D232A; --rule:#2A313A;
+  --ink:#EDF0F3; --ink-2:#AEB7C2; --ink-3:#7C8693;
+  --navy:#1B2E45; --navy-ink:#F2F5F8; --navy-2:#93A8C0;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70;
+  --pos:#4cc284; --neg:#ef7474; --warn:#e2a13a; --crit:#ef7474; --crit-bg:#3A1F22; --warn-bg:#3A2F1A; --ok-bg:#16301F;
+  --track:#262D35;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6;-webkit-text-size-adjust:100%}
+.wrap{max-width:780px;margin:0 auto;padding-inline:16px;padding-block:0 48px}
+.num,.kpi .v,td.n,th.n{font-family:var(--num);font-variant-numeric:tabular-nums}
+h1,h2,h3{text-wrap:balance;margin:0}
+.masthead{background:var(--navy);color:var(--navy-ink);padding-block:22px 20px}
+.masthead .wrap{padding-block:0}
+.eyebrow{font-size:12px;letter-spacing:.12em;color:var(--navy-2)}
+.masthead h1{font-size:24px;font-weight:700;margin-top:6px;letter-spacing:.02em}
+.masthead .meta{margin-top:8px;font-size:13px;color:var(--navy-2);display:flex;flex-wrap:wrap;gap:4px 14px}
+.stamp{display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-size:12.5px;padding:4px 10px;border:1px solid rgba(255,255,255,.28);border-radius:999px;color:var(--navy-ink)}
+.stamp i{width:7px;height:7px;border-radius:50%;background:#5fd08f;display:inline-block}
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--rule)}
+nav.toc .wrap{display:flex;gap:6px;overflow-x:auto;padding-block:9px;scrollbar-width:none}
+nav.toc .wrap::-webkit-scrollbar{display:none}
+nav.toc a{flex:0 0 auto;font-size:13px;color:var(--ink-2);text-decoration:none;padding:5px 11px;border-radius:999px;background:var(--surface);border:1px solid var(--rule)}
+nav.toc a:focus-visible,button:focus-visible{outline:2px solid var(--s1);outline-offset:2px}
+section{margin-top:28px;scroll-margin-top:60px}
+section>h2{font-size:18px;font-weight:700;display:flex;align-items:baseline;gap:10px}
+section>h2 small{font-size:12.5px;font-weight:400;color:var(--ink-3)}
+.lead{color:var(--ink-2);font-size:14px;margin:6px 0 12px;max-width:62ch}
+.panel{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:14px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:10px;overflow:hidden;margin-top:16px}
+.kpi{background:var(--surface);padding:12px 12px 11px}
+.kpi .k{font-size:12px;color:var(--ink-3)}
+.kpi .v{font-size:25px;font-weight:600;line-height:1.15;margin-top:3px}
+.kpi .v small{font-size:13px;font-weight:500;color:var(--ink-2);margin-left:2px}
+.kpi .s{font-size:11.5px;color:var(--ink-3);margin-top:2px}
+.kpi.hero .v{color:var(--pos)}
+@media (max-width:520px){.kpis{grid-template-columns:repeat(2,1fr)}.kpi .v{font-size:23px}}
+.callouts{display:grid;gap:8px;margin-top:14px}
+.callout{display:flex;gap:10px;align-items:flex-start;background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:10px 12px;font-size:14px}
+.callout b{font-weight:600}
+.tag{flex:0 0 auto;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:999px;margin-top:1px}
+.tag.crit{background:var(--crit-bg);color:var(--crit)}.tag.warn{background:var(--warn-bg);color:var(--warn)}.tag.ok{background:var(--ok-bg);color:var(--pos)}.tag.info{background:var(--surface-2);color:var(--ink-2);border:1px solid var(--rule)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--ink-2);margin-bottom:8px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:10px;height:10px;border-radius:3px;display:inline-block}
+svg text{fill:var(--ink-3);font-size:11px;font-family:var(--num)}
+svg .lab{fill:var(--ink-2);font-family:var(--sans);font-size:12px}
+svg .val{fill:var(--ink);font-size:12.5px;font-weight:600}
+.chart{width:100%;height:auto;display:block;touch-action:manipulation}
+.tip{position:fixed;z-index:20;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12.5px;line-height:1.5;padding:7px 10px;border-radius:8px;max-width:240px;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+.tip b{font-family:var(--num);font-size:13.5px}
+.tbl{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:10px;border:1px solid var(--rule);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th{font-size:12px;font-weight:600;color:var(--ink-3);text-align:left;padding:8px 10px;border-bottom:1px solid var(--rule);white-space:nowrap;background:var(--surface-2)}
+td{padding:8px 10px;border-bottom:1px solid var(--rule);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td.n,th.n{text-align:right}
+tr.tot td{font-weight:600;background:var(--surface-2)}
+.pos{color:var(--pos)}.neg{color:var(--neg)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:8px;overflow:hidden;background:var(--surface);margin-bottom:10px}
+.seg button{font:inherit;font-size:13px;border:0;background:none;color:var(--ink-2);padding:6px 12px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--rule)}
+.seg button[aria-pressed="true"]{background:var(--navy);color:var(--navy-ink)}
+.paths{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media (max-width:560px){.paths{grid-template-columns:1fr}}
+.pathcard{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:12px;border-top:3px solid var(--c)}
+.pathcard h3{font-size:15px;display:flex;justify-content:space-between;align-items:baseline}
+.pathcard h3 span{font-size:12px;color:var(--ink-3);font-weight:400}
+.pathcard .big{font-family:var(--num);font-size:24px;font-weight:600;margin-top:4px}
+.pathcard dl{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;margin:6px 0 0;font-size:13px}
+.pathcard dt{color:var(--ink-3)}.pathcard dd{margin:0;text-align:right;font-family:var(--num);font-variant-numeric:tabular-nums}
+.pathcard p{font-size:12.5px;color:var(--ink-2);margin:8px 0 0}
+.bar100{display:flex;height:26px;border-radius:6px;overflow:hidden;gap:2px;background:var(--surface)}
+.bar100 div{display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-family:var(--num);font-weight:600;min-width:0;overflow:hidden;white-space:nowrap}
+.sharerow{display:grid;grid-template-columns:52px 1fr;gap:10px;align-items:center;margin-top:8px;font-size:12.5px;color:var(--ink-2)}
+.meter{height:10px;background:var(--track);border-radius:6px;overflow:hidden;position:relative}
+.meter i{display:block;height:100%;border-radius:6px}
+.quota{display:grid;gap:12px}
+.qrow .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:14px}
+.qrow .top .num{font-size:15px;font-weight:600}
+.qrow .sub{font-size:12px;color:var(--ink-3);margin-top:4px;display:flex;justify-content:space-between;gap:8px}
+.tier{position:relative;margin:44px 0 30px}
+.tier .meter{height:14px}
+.tick{position:absolute;top:-38px;line-height:1.3;transform:translateX(-50%);font-size:11.5px;color:var(--ink-2);white-space:nowrap;text-align:center}
+.tick::after{content:"";position:absolute;left:50%;top:34px;height:22px;border-left:1.5px dashed var(--ink-3)}
+.tick.end{transform:translateX(-100%)}.tick.end::after{left:100%}
+.tierlab{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-3);margin-top:6px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:520px){.two{grid-template-columns:1fr}}
+.cmp{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:12px}
+.cmp h3{font-size:14.5px}
+.cmp .row{display:flex;justify-content:space-between;font-size:13.5px;padding:3px 0;border-bottom:1px dashed var(--rule)}
+.cmp .row:last-child{border-bottom:0}
+.cmp .row span:last-child{font-family:var(--num);font-variant-numeric:tabular-nums}
+details{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:10px 14px;margin-top:10px}
+details summary{cursor:pointer;font-weight:600;font-size:14.5px}
+details p,details li{font-size:13.5px;color:var(--ink-2)}
+details ol,details ul{padding-left:20px;margin:8px 0}
+.foot{margin-top:28px;font-size:12px;color:var(--ink-3);border-top:1px solid var(--rule);padding-top:12px}
+@media (prefers-reduced-motion:no-preference){.meter i,.bar100 div{transition:width .5s ease}}
+</style>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">华西特钢 · 废钢供应链</div>
+    <h1>经营报告</h1>
+    <div class="meta"><span id="m-range"></span><span id="m-asof"></span></div>
+    <div class="stamp"><i></i><span id="m-stamp"></span></div>
+  </div>
+</header>
+<nav class="toc" aria-label="章节">
+  <div class="wrap">
+    <a href="#s-overview">总览</a><a href="#s-source">利润来源</a><a href="#s-path">三条路径</a><a href="#s-trend">每日走势</a><a href="#s-period">量补周期</a>
+    <a href="#s-disp">调货人</a><a href="#s-base">货源</a><a href="#s-ticket">票源额度</a><a href="#s-mode">车/船</a><a href="#s-top">单车</a><a href="#s-risk">待办</a><a href="#s-rule">口径</a>
+  </div>
+</nav>
+
+<main class="wrap">
+  <section id="s-overview" style="margin-top:0">
+    <div class="kpis" id="kpis"></div>
+    <div class="callouts" id="headlines"></div>
+  </section>
+
+  <section id="s-source">
+    <h2>利润从哪来 <small>全部车次，元</small></h2>
+    <p class="lead" id="src-lead"></p>
+    <div class="panel"><svg class="chart" id="wf" role="img" aria-label="利润构成"></svg></div>
+  </section>
+
+  <section id="s-path">
+    <h2>三条计算路径</h2>
+    <p class="lead">配票：我们配企业票源，赚量补、承担点位差；反向：个人开票，本期不扣垫资费；带票：供货厂自带票，我们收服务费。</p>
+    <div class="paths" id="paths"></div>
+    <div class="panel" style="margin-top:10px">
+      <div class="legend" id="path-legend"></div>
+      <div class="sharerow"><span>吨位</span><div class="bar100" id="share-ton"></div></div>
+      <div class="sharerow"><span>利润</span><div class="bar100" id="share-profit"></div></div>
+      <div class="sharerow"><span>结算额</span><div class="bar100" id="share-amt"></div></div>
+    </div>
+  </section>
+
+  <section id="s-trend">
+    <h2>每日走势 <small>按结算日期</small></h2>
+    <div class="seg" role="group" aria-label="指标"><button type="button" id="tr-ton" aria-pressed="true">吨位</button><button type="button" id="tr-profit" aria-pressed="false">利润</button></div>
+    <div class="panel">
+      <div class="legend" id="trend-legend"></div>
+      <svg class="chart" id="trend" role="img" aria-label="每日走势"></svg>
+    </div>
+    <div class="panel" style="margin-top:10px">
+      <div class="legend"><span>累计利润（元）</span></div>
+      <svg class="chart" id="cum" role="img" aria-label="累计利润"></svg>
+    </div>
+  </section>
+
+  <section id="s-period">
+    <h2>量补周期 <small>华西特钢 每月 26 日 ~ 次月 25 日</small></h2>
+    <p class="lead" id="period-lead"></p>
+    <div class="panel">
+      <div class="tier" id="tier"></div>
+      <div class="two" id="period-cmp"></div>
+    </div>
+  </section>
+
+  <section id="s-disp">
+    <h2>按调货人</h2>
+    <div class="seg" role="group" aria-label="排序"><button type="button" data-k="net" aria-pressed="true">利润</button><button type="button" data-k="ton" aria-pressed="false">吨位</button><button type="button" data-k="ppt" aria-pressed="false">吨均</button></div>
+    <div class="panel"><svg class="chart" id="disp-chart" role="img" aria-label="调货人利润"></svg></div>
+    <div class="tbl"><table id="disp-tbl"></table></div>
+  </section>
+
+  <section id="s-base">
+    <h2>按货源 <small>供货厂 / 货主</small></h2>
+    <div class="tbl"><table id="base-tbl"></table></div>
+  </section>
+
+  <section id="s-ticket">
+    <h2>票源与额度</h2>
+    <div class="tbl"><table id="src-tbl"></table></div>
+    <div class="panel quota" style="margin-top:10px" id="quota"></div>
+  </section>
+
+  <section id="s-mode">
+    <h2>车 与 船</h2>
+    <div class="two" id="mode"></div>
+  </section>
+
+  <section id="s-top">
+    <h2>单车表现</h2>
+    <div class="seg" role="group" aria-label="单车"><button type="button" data-k="top" aria-pressed="true">利润最高 10 车</button><button type="button" data-k="ppt" aria-pressed="false">吨均最低 10 车</button></div>
+    <div class="tbl"><table id="top-tbl"></table></div>
+  </section>
+
+  <section id="s-risk">
+    <h2>需要关注</h2>
+    <div class="callouts" id="risks"></div>
+  </section>
+
+  <section id="s-rule">
+    <h2>口径说明</h2>
+    <details open>
+      <summary>每条路径怎么算利润</summary>
+      <ul>
+        <li><b>配票</b>：给客户付 = 结算额 × 86%；前端实付 = (结算额 − 垫资 23 元/吨) × (1 − 票点)，俊兴/益周 13.5%、煌烽 13.2%；利润 = 量补 − (给客户付 − 前端实付) − 调货提成。</li>
+        <li><b>反向</b>：本期不扣垫资费（已含在反向票点 13.8% 里）；前端实付 = 结算额 × 86.2%；利润 = 量补 − (给客户付 − 前端实付)。</li>
+        <li><b>带票</b>：毛服务费 40 元/吨 − 垫资 23 元/吨 − 林凯提成 15 元/吨 + 量补 25 元/吨 = 每吨 27 元。</li>
+      </ul>
+    </details>
+    <details>
+      <summary>本期确认的规则</summary>
+      <ul>
+        <li>量补：7/26~8/25 那期按约定 20 元/吨（业务恢复初期特殊处理）；8/26 起按阶梯，累计过 5,000 吨为 25 元/吨。</li>
+        <li>林凯配票提成 5 元/吨，9/05 起停；带票提成 15 元/吨。</li>
+        <li>切割费由客户承担：钢厂已从结算额扣除，利润不再重复扣。</li>
+        <li>王荣胜 8/29 鲁济宁货4095：特批按 13.8% 给客户付款。</li>
+        <li>票差留存（益周进项 12.8%、转出 13.5% 的差）单独留存，不计入上面的利润。</li>
+      </ul>
+    </details>
+    <details>
+      <summary>和财务台账的核对</summary>
+      <p id="recon"></p>
+    </details>
+  </section>
+  <div class="foot" id="foot"></div>
+</main>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+const D = {"trips":[{"id":1,"p":"苏DBB772","ty":"车","d":"2026-08-19","ton":73.58,"amt":168498.2,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":482.32,"rw":1471.6,"cm":367.9,"padv":621.38,"svc":null,"sadv":null,"resv":0,"rwu":20.0},{"id":2,"p":"苏DFM060","ty":"车","d":"2026-08-20","ton":34.8,"amt":84564.0,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":252.47,"rw":696.0,"cm":174.0,"padv":269.53,"svc":null,"sadv":null,"resv":0,"rwu":20.0},{"id":3,"p":"苏DBB772","ty":"车","d":"2026-08-21","ton":81.16,"amt":201276.8,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":609.11,"rw":1623.2,"cm":405.8,"padv":608.29,"svc":null,"sadv":null,"resv":0,"rwu":20.0},{"id":4,"p":"皖M2A505","ty":"车","d":"2026-08-21","ton":36.36,"amt":83264.4,"path":"配票","src":"俊兴","disp":"林凯","base":"俊兴","net":238.34,"rw":727.2,"cm":181.8,"padv":307.06,"svc":null,"sadv":null,"resv":0,"rwu":20.0},{"id":5,"p":"苏EQB977","ty":"车","d":"2026-08-21","ton":32.94,"amt":75432.6,"path":"配票","src":"俊兴","disp":"林凯","base":"俊兴","net":215.92,"rw":658.8,"cm":164.7,"padv":278.18,"svc":null,"sadv":null,"resv":0,"rwu":20.0},{"id":6,"p":"苏BUK952","ty":"车","d":"2026-08-21","ton":24.41,"amt":59023.38,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":175.63,"rw":488.2,"cm":122.05,"padv":190.52,"svc":null,"sadv":null,"resv":0,"rwu":20.0},{"id":7,"p":"苏DBB772","ty":"车","d":"2026-08-22","ton":69.5,"amt":159155.0,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":455.57,"rw":1390.0,"cm":347.5,"padv":586.93,"svc":null,"sadv":null,"resv":0,"rwu":20.0},{"id":8,"p":"苏E9W908","ty":"车","d":"2026-08-22","ton":39.16,"amt":91242.8,"path":"配票","src":"俊兴","disp":"邓晶焱","base":"调货人自有车队","net":460.33,"rw":783.2,"cm":0,"padv":322.87,"svc":null,"sadv":null,"resv":0,"rwu":20.0},{"id":9,"p":"苏MAK862","ty":"车","d":"2026-08-22","ton":34.24,"amt":78409.6,"path":"配票","src":"俊兴","disp":"林凯","base":"俊兴","net":224.44,"rw":684.8,"cm":171.2,"padv":289.16,"svc":null,"sadv":null,"resv":0,"rwu":20.0},{"id":10,"p":"苏DBE075","ty":"车","d":"2026-08-25","ton":81.0,"amt":184032.0,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":523.67,"rw":1620.0,"cm":405.0,"padv":691.33,"svc":null,"sadv":null,"resv":0,"rwu":20.0},{"id":11,"p":"苏淮货16776","ty":"船","d":"2026-08-27","ton":560.39,"amt":1344115.89,"path":"配票","src":"俊兴","disp":"林凯","base":"俊兴","net":6779.42,"rw":14009.75,"cm":2801.95,"padv":4428.38,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":12,"p":"苏NEX375","ty":"车","d":"2026-08-27","ton":40.27,"amt":93426.4,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":471.36,"rw":1006.75,"cm":201.35,"padv":334.04,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":13,"p":"苏DFM060","ty":"车","d":"2026-08-27","ton":34.3,"amt":84206.5,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":424.63,"rw":857.5,"cm":171.5,"padv":261.37,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":14,"p":"苏DBB772","ty":"车","d":"2026-08-27","ton":66.22,"amt":148332.8,"path":"带票","src":"自带票","disp":"林凯","base":"君盛","net":1787.94,"rw":1655.5,"cm":993.3,"padv":null,"svc":2648.8,"sadv":1523.06,"resv":0,"rwu":25.0},{"id":15,"p":"苏BDK567","ty":"车","d":"2026-08-27","ton":32.05,"amt":78682.75,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":396.78,"rw":801.25,"cm":160.25,"padv":244.22,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":16,"p":"苏BZP839","ty":"车","d":"2026-08-27","ton":28.47,"amt":68569.64,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":345.84,"rw":711.75,"cm":142.35,"padv":223.56,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":17,"p":"苏NEV615","ty":"车","d":"2026-08-27","ton":38.78,"amt":89969.6,"path":"配票","src":"俊兴","disp":"邓晶焱","base":"俊兴","net":647.82,"rw":969.5,"cm":0,"padv":321.68,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":18,"p":"苏ERS080","ty":"车","d":"2026-08-27","ton":48.38,"amt":116112.0,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":585.64,"rw":1209.5,"cm":241.9,"padv":381.96,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":19,"p":"鲁济宁货4095","ty":"船","d":"2026-08-27","ton":518.48,"amt":1271258.96,"path":"配票","src":"俊兴","disp":"王荣胜","base":"俊兴","net":6460.62,"rw":12962.0,"cm":0,"padv":6501.38,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":20,"p":"苏DBE075","ty":"车","d":"2026-08-28","ton":38.2,"amt":88624.0,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":447.13,"rw":955.0,"cm":191.0,"padv":316.87,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":21,"p":"苏DBX137","ty":"车","d":"2026-08-28","ton":18.52,"amt":44448.0,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":224.18,"rw":463.0,"cm":92.6,"padv":146.22,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":22,"p":"苏DFB287","ty":"车","d":"2026-08-28","ton":81.9,"amt":191646.0,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":966.83,"rw":2047.5,"cm":409.5,"padv":671.17,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":23,"p":"苏DFM060","ty":"车","d":"2026-08-28","ton":55.18,"amt":130224.8,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":656.92,"rw":1379.5,"cm":275.9,"padv":446.68,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":24,"p":"苏DBB772","ty":"车","d":"2026-08-28","ton":63.16,"amt":153352.48,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":773.39,"rw":1579.0,"cm":315.8,"padv":489.81,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":25,"p":"苏BDK567","ty":"车","d":"2026-08-28","ton":34.22,"amt":83496.8,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":421.08,"rw":855.5,"cm":171.1,"padv":263.32,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":26,"p":"苏BUK952","ty":"车","d":"2026-08-28","ton":27.22,"amt":66416.8,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":334.94,"rw":680.5,"cm":136.1,"padv":209.46,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":27,"p":"皖KQ1052","ty":"车","d":"2026-08-28","ton":34.49,"amt":80430.68,"path":"配票","src":"俊兴","disp":"高栾凤","base":"俊兴","net":578.22,"rw":862.25,"cm":0,"padv":284.03,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":28,"p":"苏DBE075","ty":"车","d":"2026-08-28","ton":67.8,"amt":151872.0,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":766.48,"rw":1695.0,"cm":339.0,"padv":589.52,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":29,"p":"冀A224E6","ty":"车","d":"2026-08-28","ton":29.0,"amt":71369.0,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":359.89,"rw":725.0,"cm":145.0,"padv":220.11,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":30,"p":"苏BWX568","ty":"车","d":"2026-08-28","ton":32.52,"amt":78048.0,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":393.65,"rw":813.0,"cm":162.6,"padv":256.75,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":31,"p":"苏DBB772","ty":"车","d":"2026-08-29","ton":81.36,"amt":204213.6,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":1029.61,"rw":2034.0,"cm":406.8,"padv":597.59,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":32,"p":"苏ERS080","ty":"车","d":"2026-08-29","ton":48.75,"amt":117000.0,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":590.12,"rw":1218.75,"cm":243.75,"padv":384.88,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":33,"p":"苏DBE075","ty":"车","d":"2026-08-29","ton":79.68,"amt":199996.8,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":1008.35,"rw":1992.0,"cm":398.4,"padv":585.25,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":34,"p":"冀A224E6","ty":"车","d":"2026-08-29","ton":20.0,"amt":48800.0,"path":"配票","src":"俊兴","disp":"林凯","base":"俊兴","net":246.1,"rw":500.0,"cm":100.0,"padv":153.9,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":35,"p":"苏AE8896","ty":"车","d":"2026-08-29","ton":39.96,"amt":93186.72,"path":"配票","src":"俊兴","disp":"邓晶焱","base":"俊兴","net":669.93,"rw":999.0,"cm":0,"padv":329.07,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":36,"p":"苏DBB772","ty":"车","d":"2026-08-29","ton":66.06,"amt":147974.4,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":746.81,"rw":1651.5,"cm":330.3,"padv":574.39,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":37,"p":"苏DBE075","ty":"车","d":"2026-08-30","ton":81.92,"amt":205619.2,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":1036.7,"rw":2048.0,"cm":409.6,"padv":601.7,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":38,"p":"苏DBE961","ty":"车","d":"2026-08-30","ton":78.64,"amt":181501.12,"path":"配票","src":"俊兴","disp":"林凯","base":"俊兴","net":915.76,"rw":1966.0,"cm":393.2,"padv":657.04,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":39,"p":"苏DFB287","ty":"车","d":"2026-08-30","ton":83.26,"amt":192164.08,"path":"配票","src":"俊兴","disp":"林凯","base":"俊兴","net":969.56,"rw":2081.5,"cm":416.3,"padv":695.64,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":40,"p":"苏BTQ938","ty":"车","d":"2026-08-30","ton":32.42,"amt":77808.0,"path":"配票","src":"俊兴","disp":"李涛","base":"调货人自有车队","net":554.54,"rw":810.5,"cm":0,"padv":255.96,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":41,"p":"皖SB2849","ty":"车","d":"2026-08-30","ton":43.34,"amt":101068.88,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":509.9,"rw":1083.5,"cm":216.7,"padv":356.9,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":42,"p":"苏DBB772","ty":"车","d":"2026-08-30","ton":83.78,"amt":211125.6,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":1064.42,"rw":2094.5,"cm":418.9,"padv":611.18,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":43,"p":"冀A224E6","ty":"车","d":"2026-08-30","ton":46.28,"amt":107924.96,"path":"配票","src":"俊兴","disp":"林凯","base":"俊兴","net":544.48,"rw":1157.0,"cm":231.4,"padv":381.12,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":44,"p":"苏DBB772","ty":"车","d":"2026-08-30","ton":67.96,"amt":152230.4,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":768.29,"rw":1699.0,"cm":339.8,"padv":590.91,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":45,"p":"苏DFM060","ty":"车","d":"2026-08-31","ton":25.12,"amt":60288.0,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":304.08,"rw":628.0,"cm":125.6,"padv":198.32,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":46,"p":"冀A224E6","ty":"车","d":"2026-08-31","ton":29.08,"amt":71216.92,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":359.14,"rw":727.0,"cm":145.4,"padv":222.46,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":47,"p":"苏DFM060","ty":"车","d":"2026-08-31","ton":56.78,"amt":137407.6,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":693.0,"rw":1419.5,"cm":283.9,"padv":442.6,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":48,"p":"苏DBB772","ty":"车","d":"2026-08-31","ton":80.96,"amt":203209.6,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":1024.55,"rw":2024.0,"cm":404.8,"padv":594.65,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":49,"p":"苏DBB772","ty":"车","d":"2026-08-31","ton":69.66,"amt":156038.4,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":787.51,"rw":1741.5,"cm":348.3,"padv":605.69,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":50,"p":"苏ERS080","ty":"车","d":"2026-09-01","ton":49.1,"amt":117840.0,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":594.36,"rw":1227.5,"cm":245.5,"padv":387.64,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":51,"p":"苏DFM060","ty":"车","d":"2026-09-01","ton":25.96,"amt":61265.6,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":309.05,"rw":649.0,"cm":129.8,"padv":210.15,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":52,"p":"苏DBX137","ty":"车","d":"2026-09-01","ton":47.51,"amt":110793.32,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":558.96,"rw":1187.75,"cm":237.55,"padv":391.24,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":53,"p":"苏DBB772","ty":"车","d":"2026-09-01","ton":70.76,"amt":158502.4,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":799.94,"rw":1769.0,"cm":353.8,"padv":615.26,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":54,"p":"通海机9998","ty":"船","d":"2026-09-01","ton":481.77,"amt":1181813.6,"path":"配票","src":"益周","disp":"无调货人","base":"尹鹏飞","net":8368.5,"rw":12044.25,"cm":0,"padv":3675.75,"svc":null,"sadv":null,"resv":8195.13,"rwu":25.0},{"id":55,"p":"苏BXT103","ty":"车","d":"2026-09-02","ton":56.14,"amt":132939.52,"path":"配票","src":"俊兴","disp":"闫东朋","base":"调货人自有车队","net":951.29,"rw":1403.5,"cm":0,"padv":452.21,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":56,"p":"苏NER821","ty":"车","d":"2026-09-03","ton":35.72,"amt":86442.4,"path":"配票","src":"俊兴","disp":"李涛","base":"调货人自有车队","net":614.56,"rw":893.0,"cm":0,"padv":278.44,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":57,"p":"苏兴达货8566","ty":"船","d":"2026-09-03","ton":560.21,"amt":1381864.15,"path":"配票","src":"煌烽","disp":"无调货人","base":"尹鹏飞","net":13876.13,"rw":14005.25,"cm":0,"padv":129.12,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":58,"p":"皖SG1123","ty":"车","d":"2026-09-04","ton":38.07,"amt":91748.7,"path":"配票","src":"俊兴","disp":"李涛","base":"调货人自有车队","net":653.09,"rw":951.75,"cm":0,"padv":298.66,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":59,"p":"皖LE9644","ty":"车","d":"2026-09-04","ton":35.28,"amt":68714.8,"path":"配票","src":"俊兴","disp":"李涛","base":"调货人自有车队","net":523.68,"rw":882.0,"cm":0,"padv":358.32,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":60,"p":"苏K66529","ty":"车","d":"2026-09-04","ton":39.12,"amt":89584.8,"path":"配票","src":"煌烽","disp":"陈杰","base":"调货人自有车队","net":913.69,"rw":978.0,"cm":0,"padv":64.31,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":61,"p":"皖城兴货688","ty":"船","d":"2026-09-05","ton":719.14,"amt":1823625.4,"path":"配票","src":"俊兴","disp":"林凯","base":"调货人自有车队","net":12789.34,"rw":17978.5,"cm":0,"padv":5189.16,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":62,"p":"鲁济宁货1567","ty":"船","d":"2026-09-07","ton":613.8,"amt":1467823.1,"path":"配票","src":"煌烽","disp":"林凯","base":"调货人自有车队","net":14833.68,"rw":15345.0,"cm":0,"padv":511.32,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":63,"p":"苏DBE075","ty":"车","d":"2026-09-10","ton":82.26,"amt":208117.8,"path":"带票","src":"自带票","disp":"林凯","base":"力拓","net":2221.02,"rw":2056.5,"cm":1233.9,"padv":null,"svc":3290.4,"sadv":1891.98,"resv":0,"rwu":25.0},{"id":64,"p":"苏DBB772","ty":"车","d":"2026-09-11","ton":82.2,"amt":207966.0,"path":"带票","src":"自带票","disp":"林凯","base":"力拓","net":2219.4,"rw":2055.0,"cm":1233.0,"padv":null,"svc":3288.0,"sadv":1890.6,"resv":0,"rwu":25.0},{"id":65,"p":"苏DBE961","ty":"车","d":"2026-09-12","ton":79.76,"amt":181852.8,"path":"带票","src":"自带票","disp":"林凯","base":"力拓","net":2153.52,"rw":1994.0,"cm":1196.4,"padv":null,"svc":3190.4,"sadv":1834.48,"resv":0,"rwu":25.0},{"id":66,"p":"苏DBE075","ty":"车","d":"2026-09-12","ton":78.04,"amt":200062.8,"path":"带票","src":"自带票","disp":"林凯","base":"鑫景通","net":2107.08,"rw":1951.0,"cm":1170.6,"padv":null,"svc":3121.6,"sadv":1794.92,"resv":0,"rwu":25.0},{"id":67,"p":"皖F30399","ty":"车","d":"2026-09-12","ton":39.17,"amt":94008.0,"path":"配票","src":"煌烽","disp":"邓晶焱","base":"调货人自有车队","net":949.32,"rw":979.25,"cm":0,"padv":29.93,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":68,"p":"苏DBE075","ty":"车","d":"2026-09-12","ton":65.44,"amt":147240.0,"path":"带票","src":"自带票","disp":"林凯","base":"君盛","net":1766.88,"rw":1636.0,"cm":981.6,"padv":null,"svc":2617.6,"sadv":1505.12,"resv":0,"rwu":25.0},{"id":69,"p":"苏DBB772","ty":"车","d":"2026-09-14","ton":60.9,"amt":137025.0,"path":"带票","src":"自带票","disp":"林凯","base":"君盛","net":1644.3,"rw":1522.5,"cm":913.5,"padv":null,"svc":2436.0,"sadv":1400.7,"resv":0,"rwu":25.0},{"id":70,"p":"苏DBE961","ty":"车","d":"2026-09-14","ton":75.88,"amt":191976.4,"path":"带票","src":"自带票","disp":"林凯","base":"力拓","net":2048.76,"rw":1897.0,"cm":1138.2,"padv":null,"svc":3035.2,"sadv":1745.24,"resv":0,"rwu":25.0},{"id":71,"p":"鲁DC6106","ty":"车","d":"2026-09-14","ton":44.52,"amt":103286.4,"path":"配票","src":"煌烽","disp":"高栾凤","base":"（未填）","net":1050.49,"rw":1113.0,"cm":0,"padv":62.51,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":72,"p":"苏J19371","ty":"车","d":"2026-09-14","ton":78.36,"amt":198250.8,"path":"反向","src":"反向-闫东朋","disp":"闫东朋","base":"调货人自有车队","net":2355.5,"rw":1959.0,"cm":0,"padv":-396.5,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":73,"p":"苏ELU629","ty":"车","d":"2026-09-15","ton":34.42,"amt":82263.8,"path":"配票","src":"煌烽","disp":"邓晶焱","base":"调货人自有车队","net":831.45,"rw":860.5,"cm":0,"padv":29.05,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":74,"p":"苏DBE075","ty":"车","d":"2026-09-15","ton":31.46,"amt":70785.0,"path":"带票","src":"自带票","disp":"林凯","base":"君盛","net":849.42,"rw":786.5,"cm":471.9,"padv":null,"svc":1258.4,"sadv":723.58,"resv":0,"rwu":25.0},{"id":75,"p":"苏L80153","ty":"车","d":"2026-09-15","ton":47.98,"amt":123308.6,"path":"反向","src":"反向-闫东朋","disp":"闫东朋","base":"调货人自有车队","net":1446.12,"rw":1199.5,"cm":0,"padv":-246.62,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":76,"p":"苏J19371","ty":"车","d":"2026-09-15","ton":79.58,"amt":199745.8,"path":"反向","src":"反向-闫东朋","disp":"闫东朋","base":"调货人自有车队","net":2388.99,"rw":1989.5,"cm":0,"padv":-399.49,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":77,"p":"苏CLK667","ty":"车","d":"2026-09-15","ton":33.02,"amt":76606.4,"path":"配票","src":"煌烽","disp":"高栾凤","base":"（未填）","net":779.14,"rw":825.5,"cm":0,"padv":46.36,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":78,"p":"苏DBB772","ty":"车","d":"2026-09-15","ton":71.5,"amt":169455.0,"path":"带票","src":"自带票","disp":"林凯","base":"鑫景通","net":1930.5,"rw":1787.5,"cm":1072.5,"padv":null,"svc":2860.0,"sadv":1644.5,"resv":0,"rwu":25.0},{"id":79,"p":"苏DBE961","ty":"车","d":"2026-09-15","ton":31.38,"amt":70605.0,"path":"带票","src":"自带票","disp":"林凯","base":"君盛","net":847.26,"rw":784.5,"cm":470.7,"padv":null,"svc":1255.2,"sadv":721.74,"resv":0,"rwu":25.0},{"id":80,"p":"皖四航6058","ty":"车","d":"2026-09-15","ton":589.24,"amt":1444596.08,"path":"配票","src":"煌烽","disp":"无调货人","base":"尹鹏飞","net":14524.18,"rw":14731.0,"cm":0,"padv":206.82,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":81,"p":"皖SC6167","ty":"车","d":"2026-09-16","ton":50.72,"amt":128017.28,"path":"反向","src":"反向-闫东朋","disp":"闫东朋","base":"调货人自有车队","net":1524.03,"rw":1268.0,"cm":0,"padv":-256.03,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":82,"p":"皖AK6033","ty":"车","d":"2026-09-16","ton":41.42,"amt":96094.4,"path":"配票","src":"煌烽","disp":"邓晶焱","base":"调货人自有车队","net":977.35,"rw":1035.5,"cm":0,"padv":58.15,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":83,"p":"苏DBE075","ty":"车","d":"2026-09-17","ton":81.46,"amt":206093.8,"path":"带票","src":"自带票","disp":"林凯","base":"力拓","net":2199.42,"rw":2036.5,"cm":1221.9,"padv":null,"svc":3258.4,"sadv":1873.58,"resv":0,"rwu":25.0},{"id":84,"p":"皖AP1626","ty":"车","d":"2026-09-17","ton":52.0,"amt":126308.0,"path":"反向","src":"反向-闫东朋","disp":"闫东朋","base":"调货人自有车队","net":1552.62,"rw":1300.0,"cm":0,"padv":-252.62,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":85,"p":"苏J19371","ty":"车","d":"2026-09-17","ton":73.54,"amt":186056.2,"path":"反向","src":"反向-闫东朋","disp":"闫东朋","base":"调货人自有车队","net":2210.61,"rw":1838.5,"cm":0,"padv":-372.11,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":86,"p":"苏DBE075","ty":"车","d":"2026-09-17","ton":29.79,"amt":68576.58,"path":"带票","src":"自带票","disp":"林凯","base":"力拓","net":804.33,"rw":744.75,"cm":446.85,"padv":null,"svc":1191.6,"sadv":685.17,"resv":0,"rwu":25.0},{"id":87,"p":"苏DBB772","ty":"车","d":"2026-09-17","ton":28.84,"amt":66389.68,"path":"带票","src":"自带票","disp":"林凯","base":"君盛","net":778.68,"rw":721.0,"cm":432.6,"padv":null,"svc":1153.6,"sadv":663.32,"resv":0,"rwu":25.0},{"id":89,"p":"苏DBB772","ty":"车","d":"2026-09-18","ton":83.74,"amt":202650.8,"path":"配票","src":"煌烽","disp":"林凯","base":"调货人自有车队","net":2042.92,"rw":2093.5,"cm":0,"padv":50.58,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":90,"p":"苏NEN536","ty":"车","d":"2026-09-18","ton":34.02,"amt":79266.6,"path":"配票","src":"煌烽","disp":"林凯","base":"（未填）","net":805.46,"rw":850.5,"cm":0,"padv":45.04,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":91,"p":"苏DBE075","ty":"车","d":"2026-09-18","ton":30.72,"amt":70717.44,"path":"带票","src":"自带票","disp":"林凯","base":"君盛","net":829.44,"rw":768.0,"cm":460.8,"padv":null,"svc":1228.8,"sadv":706.56,"resv":0,"rwu":25.0},{"id":92,"p":"苏DBB772","ty":"车","d":"2026-09-18","ton":31.32,"amt":72098.64,"path":"带票","src":"自带票","disp":"林凯","base":"君盛","net":845.64,"rw":783.0,"cm":469.8,"padv":null,"svc":1252.8,"sadv":720.36,"resv":0,"rwu":25.0},{"id":93,"p":"苏通源货6666","ty":"船","d":"2026-09-18","ton":646.85,"amt":1563945.84,"path":"反向","src":"反向-尹鹏飞","disp":"无调货人","base":"尹鹏飞","net":19299.14,"rw":16171.25,"cm":0,"padv":-3127.89,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":94,"p":"皖AP7737","ty":"车","d":"2026-09-19","ton":30.22,"amt":75852.2,"path":"反向","src":"反向-闫东朋","disp":"闫东朋","base":"（未填）","net":907.2,"rw":755.5,"cm":0,"padv":-151.7,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":95,"p":"苏GE2356","ty":"车","d":"2026-09-19","ton":33.86,"amt":78793.8,"path":"配票","src":"煌烽","disp":"林凯","base":"（未填）","net":800.87,"rw":846.5,"cm":0,"padv":45.63,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":96,"p":"苏NHY179","ty":"车","d":"2026-09-19","ton":33.96,"amt":78619.28,"path":"配票","src":"煌烽","disp":"林凯","base":"（未填）","net":799.98,"rw":849.0,"cm":0,"padv":49.02,"svc":null,"sadv":null,"resv":0,"rwu":25.0},{"id":97,"p":"皖SG1498","ty":"车","d":"2026-09-19","ton":30.06,"amt":75450.6,"path":"带票","src":"自带票","disp":"林凯","base":"兴德","net":811.62,"rw":751.5,"cm":450.9,"padv":null,"svc":1202.4,"sadv":691.38,"resv":0,"rwu":25.0},{"id":98,"p":"苏DBB772","ty":"车","d":"2026-09-20","ton":32.12,"amt":73940.24,"path":"带票","src":"自带票","disp":"林凯","base":"君盛","net":867.24,"rw":803.0,"cm":481.8,"padv":null,"svc":1284.8,"sadv":738.76,"resv":0,"rwu":25.0},{"id":99,"p":"苏DBE075","ty":"车","d":"2026-09-20","ton":32.72,"amt":75321.44,"path":"带票","src":"自带票","disp":"林凯","base":"君盛","net":883.44,"rw":818.0,"cm":490.8,"padv":null,"svc":1308.8,"sadv":752.56,"resv":0,"rwu":25.0},{"id":100,"p":"苏BYR535","ty":"车","d":"2026-09-20","ton":57.86,"amt":147543.0,"path":"带票","src":"自带票","disp":"林凯","base":"兴德","net":1562.22,"rw":1446.5,"cm":867.9,"padv":null,"svc":2314.4,"sadv":1330.78,"resv":0,"rwu":25.0},{"id":101,"p":"冀A224E6","ty":"车","d":"2026-09-20","ton":42.94,"amt":109497.0,"path":"带票","src":"自带票","disp":"林凯","base":"兴德","net":1159.38,"rw":1073.5,"cm":644.1,"padv":null,"svc":1717.6,"sadv":987.62,"resv":0,"rwu":25.0},{"id":102,"p":"苏DBB772","ty":"车","d":"2026-09-20","ton":75.44,"amt":196898.4,"path":"带票","src":"自带票","disp":"林凯","base":"兴德","net":2036.88,"rw":1886.0,"cm":1131.6,"padv":null,"svc":3017.6,"sadv":1735.12,"resv":0,"rwu":25.0},{"id":103,"p":"（车号待补）","ty":"车","d":"2026-09-21","ton":27.98,"amt":70229.8,"path":"反向","src":"反向-闫东朋","disp":"闫东朋","base":"（未填）","net":839.96,"rw":699.5,"cm":0,"padv":-140.46,"svc":null,"sadv":null,"resv":0,"rwu":25.0}],"quota":[{"id":1,"name":"反向-闫东朋","pct":31.65053371428571,"period_start":"2026-01-01","quota_amount":3500000.0,"quota_period":"annual","source_type":"reverse_individual","used_amount":1107768.68,"warn_pct":51.42857142857142,"warn_threshold":1800000.0},{"id":2,"name":"俊兴","pct":52.541709999999995,"period_start":"2026-09-01","quota_amount":5000000.0,"quota_period":"monthly","source_type":"front_company","used_amount":2627085.5,"warn_pct":null,"warn_threshold":null},{"id":3,"name":"益周","pct":23.4146578,"period_start":"2026-09-01","quota_amount":5000000.0,"quota_period":"monthly","source_type":"front_company","used_amount":1170732.8900000001,"warn_pct":null,"warn_threshold":null},{"id":4,"name":"煌烽","pct":104.5061222,"period_start":"2026-09-01","quota_amount":5000000.0,"quota_period":"monthly","source_type":"front_company","used_amount":5225306.11,"warn_pct":null,"warn_threshold":null},{"id":5,"name":"反向-尹鹏飞","pct":44.68416685714286,"period_start":"2026-01-01","quota_amount":3500000.0,"quota_period":"annual","source_type":"reverse_individual","used_amount":1563945.84,"warn_pct":51.42857142857142,"warn_threshold":1800000.0}],"reserved":8195.130229999992,"commission":[{"name":"林凯","payable":32452.299999999992,"paid":0.0,"unpaid":32452.299999999992},{"name":"邓晶焱","payable":0.0,"paid":0.0,"unpaid":0.0},{"name":"王荣胜","payable":0.0,"paid":0.0,"unpaid":0.0},{"name":"高栾凤","payable":0.0,"paid":0.0,"unpaid":0.0},{"name":"李涛","payable":0.0,"paid":0.0,"unpaid":0.0},{"name":"闫东朋","payable":0.0,"paid":0.0,"unpaid":0.0},{"name":"陈杰","payable":0.0,"paid":0.0,"unpaid":0.0}],"period":{"start":"2026-08-26","end":"2026-09-25","ton":8923.83,"trips":92,"profit":180083.6595499999,"ppt":20.180086302630134,"rwp":25.0,"prev_start":"2026-07-26","prev_end":"2026-08-25","prev_ton":507.15,"prev_trips":10,"prev_profit":3637.7946500000585,"prev_ppt":7.173015182884864,"prev_note":"该周期为业务恢复初期，经与钢厂协商量补按20元/吨特殊结算，不执行常规3000吨最低门槛要求（仅此一期特殊处理，后续周期仍按既定阶梯规则执行）"},"tiers":[{"min":5000.0,"price":25.0},{"min":3000.0,"price":20.0}],"finance":{"fin_total":183767.04992,"rows":101,"matched":101}};
+const PATHS = ['配票','反向','带票'];
+const PC = {配票:'var(--s1)',反向:'var(--s2)',带票:'var(--s3)'};
+const T = D.trips;
+const $ = id => document.getElementById(id);
+const fmt = (v,d=0) => v==null ? '—' : Number(v).toLocaleString('zh-CN',{minimumFractionDigits:d,maximumFractionDigits:d});
+const wan = v => (v/10000).toLocaleString('zh-CN',{maximumFractionDigits:v>=1e6?0:1});
+const sum = (a,f) => a.reduce((s,x)=>s+(f(x)||0),0);
+const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function group(key){const m=new Map();for(const t of T){const k=typeof key==='function'?key(t):t[key];if(!m.has(k))m.set(k,[]);m.get(k).push(t);}return m;}
+function agg(rows){const ton=sum(rows,r=>r.ton),net=sum(rows,r=>r.net);return{n:rows.length,ton,amt:sum(rows,r=>r.amt),net,ppt:ton?net/ton:0,cm:sum(rows,r=>r.cm),rw:sum(rows,r=>r.rw),resv:sum(rows,r=>r.resv)};}
+const ALL = agg(T);
+const dates = T.map(t=>t.d).sort();
+const d0 = dates[0], d1 = dates[dates.length-1];
+const md = s => `${+s.slice(5,7)}月${+s.slice(8,10)}日`;
+
+// ---------- 抬头 ----------
+$('m-range').textContent = `数据期间 ${md(d0)} ~ ${md(d1)}`;
+$('m-asof').textContent = '截至 2026年9月22日';
+const finDiff = ALL.net - D.finance.fin_total;
+$('m-stamp').textContent = `已与财务台账逐车核对：${D.finance.rows} 行全部对上`;
+
+// ---------- KPI ----------
+const trucks=T.filter(t=>t.ty==='车').length, ships=T.length-trucks;
+const kp = [
+  ['主营净利润',`¥${fmt(ALL.net)}`,`吨均 ${fmt(ALL.ppt,1)} 元`,true],
+  ['结算吨位',`${fmt(ALL.ton,0)}<small>吨</small>`,`${T.length} 车次`],
+  ['结算金额',`${wan(ALL.amt)}<small>万元</small>`,`均价 ${fmt(ALL.amt/ALL.ton,0)} 元/吨`],
+  ['车 / 船',`${trucks}<small>车</small> ${ships}<small>船</small>`,`船占吨位 ${fmt(sum(T.filter(t=>t.ty==='船'),r=>r.ton)/ALL.ton*100,0)}%`],
+  ['量补收入',`¥${fmt(ALL.rw)}`,`占利润 ${fmt(ALL.rw/ALL.net*100,0)}%`],
+  ['票差留存',`¥${fmt(D.reserved)}`,'单独留存，不计入利润'],
+];
+$('kpis').innerHTML = kp.map(([k,v,s,h])=>`<div class="kpi${h?' hero':''}"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`).join('');
+
+const byPath = new Map(PATHS.map(p=>[p,agg(T.filter(t=>t.path===p))]));
+const best = [...byPath].sort((a,b)=>b[1].ppt-a[1].ppt)[0];
+const quotaOver = D.quota.filter(q=>q.pct>=100);
+const heads = [
+  ['ok','利润',`累计 <b>¥${fmt(ALL.net)}</b>，其中本期（${md(D.period.start)} 起）<b>¥${fmt(D.period.profit)}</b>，吨均 ${fmt(D.period.ppt,1)} 元，是上期 ${fmt(D.period.prev_ppt,1)} 元的近 3 倍。`],
+  ['info','结构',`量补是利润的主要来源（¥${fmt(ALL.rw)}）；<b>${best[0]}</b>路径吨均最高（${fmt(best[1].ppt,1)} 元），配票路径吨位最大但吨均最低。`],
+  ...(quotaOver.length?[['crit','额度',`${quotaOver.map(q=>`<b>${esc(q.name)}</b> 本月已用 ${fmt(q.pct,1)}%，超出 ¥${fmt(q.used_amount-q.quota_amount)}`).join('；')}。`]]:[]),
+];
+$('headlines').innerHTML = heads.map(([c,t,h])=>`<div class="callout"><span class="tag ${c}">${t}</span><div>${h}</div></div>`).join('');
+
+// ---------- 提示 ----------
+const tip=$('tip');
+function showTip(e,html){tip.innerHTML=html;tip.hidden=false;const x=(e.touches?e.touches[0]:e).clientX,y=(e.touches?e.touches[0]:e).clientY;
+  const w=tip.offsetWidth,h=tip.offsetHeight;tip.style.left=Math.min(Math.max(8,x-w/2),innerWidth-w-8)+'px';tip.style.top=Math.max(8,y-h-14)+'px';}
+function hideTip(){tip.hidden=true;}
+document.addEventListener('scroll',hideTip,{passive:true});
+document.addEventListener('click',e=>{if(!e.target.closest('[data-tip]'))hideTip();});
+function bindTips(svg){svg.querySelectorAll('[data-tip]').forEach(el=>{const h=el.getAttribute('data-tip');
+  el.addEventListener('mousemove',e=>showTip(e,h));el.addEventListener('mouseleave',hideTip);el.addEventListener('click',e=>{e.stopPropagation();showTip(e,h);});});}
+const NS='http://www.w3.org/2000/svg';
+function W(svg){return Math.max(300,Math.min(svg.parentElement.clientWidth-28,748));}
+
+// ---------- 利润来源（瀑布） ----------
+const splitPadvPei = sum(T.filter(t=>t.path==='配票'),r=>r.padv), splitPadvRev = sum(T.filter(t=>t.path==='反向'),r=>r.padv);
+const svc = sum(T,r=>r.svc), sadv = sum(T,r=>r.sadv);
+const WF = [
+  ['量补（钢厂）', ALL.rw, '钢厂按吨给的量补，全部路径'],
+  ['带票服务费', svc, '带票路径 40 元/吨'],
+  ['带票垫资成本', -sadv, '带票路径 23 元/吨'],
+  ['配票点位差', -splitPadvPei, '给客户付 − 前端实付（配票）'],
+  ['反向点位差', -splitPadvRev, '反向票点 13.8% 低于给客户 14%，这部分是赚的'],
+  ['调货提成', -ALL.cm, '林凯配票 5 元/吨(9/04 前)、带票 15 元/吨'],
+];
+$('src-lead').innerHTML = `量补 ¥${fmt(ALL.rw)} 是利润的底座；配票要贴点位差 ¥${fmt(splitPadvPei)}，带票服务费扣掉垫资后净 ¥${fmt(svc-sadv)}，调货提成 ¥${fmt(ALL.cm)}。`;
+function drawWF(){
+  const svg=$('wf'), w=W(svg), rowH=34, lw=Math.min(118,w*.34), top=6, h=top+rowH*(WF.length+1)+22;
+  const maxAbs = Math.max(...WF.map(x=>Math.abs(x[1])), ALL.net);
+  let run=0; const pts=[];
+  WF.forEach(([n,v])=>{pts.push([run,run+v]);run+=v;});
+  const lo=Math.min(0,...pts.flat()), hi=Math.max(...pts.flat(),ALL.net);
+  const x0=lw+8, x1=w-8, sx=v=>x0+(v-lo)/(hi-lo)*(x1-x0);
+  let s=`<line x1="${sx(0)}" x2="${sx(0)}" y1="${top-2}" y2="${h-18}" stroke="var(--rule)" stroke-width="1"/>`;
+  WF.forEach(([n,v,desc],i)=>{const [a,b]=pts[i], y=top+i*rowH, xa=sx(Math.min(a,b)), xb=sx(Math.max(a,b));
+    const col=v>=0?'var(--pos)':'var(--neg)';
+    s+=`<text class="lab" x="0" y="${y+rowH/2+4}">${n}</text>`;
+    s+=`<rect data-tip="<b>${n}</b> ${v>=0?'+':'−'}¥${fmt(Math.abs(v))}<br>${desc}" x="${xa}" y="${y+7}" width="${Math.max(2,xb-xa)}" height="${rowH-14}" rx="3" fill="${col}" opacity=".88"/>`;
+    const lx = v>=0 ? xb+4 : xa-4, anchor = v>=0?'start':'end';
+    let inside = (v>=0 && xb+70>x1) || (v<0 && xa-70<x0);
+    if(inside && xb-xa<56){ inside=false; }
+    const flip = !inside && ((v>=0 && xb+70>x1) || (v<0 && xa-70<x0));
+    s+=`<text class="val" x="${inside?(v>=0?xb-4:xa+4):(flip?(v>=0?xa-4:xb+4):lx)}" y="${y+rowH/2+4}" text-anchor="${inside?(v>=0?'end':'start'):(flip?(v>=0?'end':'start'):anchor)}" style="${inside?'fill:#fff':''}">${v>=0?'+':'−'}${fmt(Math.abs(v)/10000,1)}万</text>`;
+    if(i<WF.length-1) s+=`<line x1="${sx(b)}" x2="${sx(b)}" y1="${y+rowH-7}" y2="${y+rowH+7}" stroke="var(--ink-3)" stroke-dasharray="2 2"/>`;
+  });
+  const y=top+WF.length*rowH;
+  s+=`<text class="lab" x="0" y="${y+rowH/2+4}" style="font-weight:600;fill:var(--ink)">主营净利润</text>`;
+  s+=`<rect data-tip="<b>主营净利润</b> ¥${fmt(ALL.net)}" x="${sx(0)}" y="${y+7}" width="${sx(ALL.net)-sx(0)}" height="${rowH-14}" rx="3" fill="var(--navy)"/>`;
+  s+=`<text class="val" x="${sx(ALL.net)-4}" y="${y+rowH/2+4}" text-anchor="end" style="fill:#fff">${fmt(ALL.net/10000,1)}万</text>`;
+  [0, Math.round(hi/100000)*100000].forEach(v=>{ if(v>=lo&&v<=hi) s+=`<text x="${sx(v)}" y="${h-4}" text-anchor="middle">${v?fmt(v/10000,0)+'万':'0'}</text>`;});
+  svg.setAttribute('viewBox',`0 0 ${w} ${h}`); svg.innerHTML=s; bindTips(svg);
+}
+
+// ---------- 三条路径 ----------
+const DESC={配票:'吨位最大；利润靠量补，点位差是主要成本',反向:'个人开票，本期不扣垫资，点位差反而为正',带票:'供货厂自带票；每吨稳定 27 元'};
+$('paths').innerHTML = PATHS.map(p=>{const a=byPath.get(p);return `<div class="pathcard" style="--c:${PC[p]}">
+  <h3>${p}<span>${a.n} 车</span></h3><div class="big">¥${fmt(a.net)}</div>
+  <dl><dt>吨位</dt><dd>${fmt(a.ton,1)} 吨</dd><dt>结算额</dt><dd>${wan(a.amt)} 万</dd><dt>吨均利润</dt><dd>${fmt(a.ppt,1)} 元</dd><dt>量补</dt><dd>${fmt(a.rw)}</dd><dt>提成</dt><dd>${fmt(a.cm)}</dd></dl>
+  <p>${DESC[p]}</p></div>`;}).join('');
+$('path-legend').innerHTML = PATHS.map(p=>`<span><i class="sw" style="background:${PC[p]}"></i>${p}</span>`).join('');
+function share(id,f){const tot=PATHS.reduce((s,p)=>s+f(byPath.get(p)),0);
+  $(id).innerHTML=PATHS.map(p=>{const v=f(byPath.get(p)),pc=v/tot*100;return `<div style="width:${pc}%;background:${PC[p]}" title="${p} ${fmt(pc,1)}%">${pc>=9?fmt(pc,0)+'%':''}</div>`;}).join('');}
+share('share-ton',a=>a.ton); share('share-profit',a=>a.net); share('share-amt',a=>a.amt);
+
+// ---------- 每日走势 ----------
+const days=[]; for(let d=new Date(d0+'T00:00:00');d<=new Date(d1+'T00:00:00');d.setDate(d.getDate()+1)){const s=new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10);days.push(s);}
+const byDay = new Map(days.map(d=>[d,Object.fromEntries(PATHS.map(p=>[p,{ton:0,net:0,n:0}]))]));
+T.forEach(t=>{const o=byDay.get(t.d)[t.path];o.ton+=t.ton;o.net+=t.net;o.n++;});
+let trendMetric='ton';
+$('trend-legend').innerHTML = PATHS.map(p=>`<span><i class="sw" style="background:${PC[p]}"></i>${p}</span>`).join('');
+function niceMax(v){const e=Math.pow(10,Math.floor(Math.log10(v)));const m=v/e;return (m<=1?1:m<=2?2:m<=2.5?2.5:m<=5?5:10)*e;}
+function drawTrend(){
+  const svg=$('trend'), w=W(svg), h=210, L=40, R=6, Tp=10, Bt=24;
+  const vals=days.map(d=>PATHS.reduce((s,p)=>s+byDay.get(d)[p][trendMetric],0));
+  const mx=niceMax(Math.max(...vals)), sy=v=>Tp+(h-Tp-Bt)*(1-v/mx), bw=(w-L-R)/days.length;
+  let s='';
+  for(let i=0;i<=4;i++){const v=mx*i/4,y=sy(v);s+=`<line x1="${L}" x2="${w-R}" y1="${y}" y2="${y}" stroke="var(--rule)" stroke-width="1"/><text x="${L-6}" y="${y+4}" text-anchor="end">${trendMetric==='ton'?fmt(v):fmt(v/10000,v<1e4?1:0)+(v?'万':'')}</text>`;}
+  days.forEach((d,i)=>{let acc=0;const x=L+i*bw+Math.max(1,bw*.12), bwi=Math.max(2,bw*.76);const o=byDay.get(d);
+    const tipH=`<b>${md(d)}</b><br>`+PATHS.filter(p=>o[p].n).map(p=>`${p} ${o[p].n}车 ${fmt(o[p].ton,1)}吨 ¥${fmt(o[p].net)}`).join('<br>')||'无结算';
+    PATHS.forEach(p=>{const v=o[p][trendMetric];if(v<=0)return;const y0=sy(acc),y1=sy(acc+v);acc+=v;
+      s+=`<rect x="${x}" y="${y1}" width="${bwi}" height="${Math.max(1,y0-y1-(acc>v?2:0))}" rx="2" fill="${PC[p]}"/>`;});
+    s+=`<rect data-tip="${esc(tipH)}" x="${L+i*bw}" y="${Tp}" width="${bw}" height="${h-Tp-Bt}" fill="transparent"/>`;
+    if(['26','01','10','20'].includes(d.slice(8)))
+      s+=`<text x="${L+i*bw+bw/2}" y="${h-7}" text-anchor="middle">${+d.slice(5,7)}/${+d.slice(8)}</text>`;
+  });
+  const pi=days.indexOf('2026-08-26'); if(pi>0){const x=L+pi*bw;s+=`<line x1="${x}" x2="${x}" y1="${Tp}" y2="${h-Bt}" stroke="var(--ink-3)" stroke-dasharray="3 3"/><text x="${x+4}" y="${Tp+10}" text-anchor="start" class="lab" style="font-size:11px">新周期</text>`;}
+  svg.setAttribute('viewBox',`0 0 ${w} ${h}`); svg.innerHTML=s; bindTips(svg);
+}
+function drawCum(){
+  const svg=$('cum'), w=W(svg), h=160, L=40, R=10, Tp=12, Bt=22;
+  let run=0; const pts=days.map(d=>{run+=PATHS.reduce((s,p)=>s+byDay.get(d)[p].net,0);return run;});
+  const mx=niceMax(run), sx=i=>L+i*(w-L-R)/(days.length-1), sy=v=>Tp+(h-Tp-Bt)*(1-v/mx);
+  let s=''; for(let i=0;i<=4;i++){const v=mx*i/4,y=sy(v);s+=`<line x1="${L}" x2="${w-R}" y1="${y}" y2="${y}" stroke="var(--rule)"/><text x="${L-6}" y="${y+4}" text-anchor="end">${v?fmt(v/10000,0)+'万':'0'}</text>`;}
+  const line=pts.map((v,i)=>`${i?'L':'M'}${sx(i).toFixed(1)},${sy(v).toFixed(1)}`).join('');
+  s+=`<path d="${line}L${sx(days.length-1)},${sy(0)}L${sx(0)},${sy(0)}Z" fill="var(--pos)" opacity=".12"/><path d="${line}" fill="none" stroke="var(--pos)" stroke-width="2"/>`;
+  const li=days.length-1; s+=`<circle cx="${sx(li)}" cy="${sy(pts[li])}" r="4" fill="var(--pos)" stroke="var(--surface)" stroke-width="2"/><text x="${sx(li)-6}" y="${sy(pts[li])-8}" text-anchor="end" class="val">¥${fmt(pts[li])}</text>`;
+  days.forEach((d,i)=>{s+=`<rect data-tip="<b>${md(d)}</b><br>累计 ¥${fmt(pts[i])}" x="${sx(i)-(w-L-R)/days.length/2}" y="${Tp}" width="${(w-L-R)/days.length}" height="${h-Tp-Bt}" fill="transparent"/>`;
+    if(['26','01','10','20'].includes(d.slice(8))) s+=`<text x="${sx(i)}" y="${h-6}" text-anchor="middle">${+d.slice(5,7)}/${+d.slice(8)}</text>`;});
+  svg.setAttribute('viewBox',`0 0 ${w} ${h}`); svg.innerHTML=s; bindTips(svg);
+}
+['ton','profit'].forEach(k=>$('tr-'+k).addEventListener('click',()=>{trendMetric=k==='ton'?'ton':'net';$('tr-ton').setAttribute('aria-pressed',k==='ton');$('tr-profit').setAttribute('aria-pressed',k==='profit');drawTrend();}));
+
+// ---------- 量补周期 ----------
+const P_=D.period, tiers=[...D.tiers].sort((a,b)=>a.min-b.min), axMax=Math.max(P_.ton*1.08, tiers[tiers.length-1].min*1.15);
+const pct=v=>Math.min(100,v/axMax*100);
+$('tier').innerHTML = tiers.map(t=>`<div class="tick" style="left:${pct(t.min)}%">${fmt(t.min)}吨<br>${t.price}元/吨</div>`).join('')+
+  `<div class="meter"><i style="width:${pct(P_.ton)}%;background:var(--navy)"></i></div><div class="tierlab"><span>0</span><span>本期累计 <b class="num" style="color:var(--ink)">${fmt(P_.ton,1)} 吨</b></span></div>`;
+const daysLeft = Math.round((new Date(P_.end)-new Date('2026-09-22'))/864e5);
+$('period-lead').innerHTML = `本期（${md(P_.start)} ~ ${md(P_.end)}）已结算 ${fmt(P_.ton,0)} 吨，<b>已过 5,000 吨档，量补 ${P_.rwp} 元/吨</b>，已到最高档；本期还剩 ${daysLeft} 天。`;
+$('period-cmp').innerHTML = [
+  ['上期',`${md(P_.prev_start)} ~ ${md(P_.prev_end)}`,P_.prev_trips,P_.prev_ton,P_.prev_profit,P_.prev_ppt,'量补按约定 20 元/吨（业务恢复初期特殊处理）'],
+  ['本期',`${md(P_.start)} ~ ${md(P_.end)}`,P_.trips,P_.ton,P_.profit,P_.ppt,`量补 ${P_.rwp} 元/吨`]].map(([n,r,c,t,p,pp,note])=>
+  `<div class="cmp"><h3>${n} <span style="font-weight:400;color:var(--ink-3);font-size:12px">${r}</span></h3>
+   <div class="row"><span>车次</span><span>${c}</span></div><div class="row"><span>吨位</span><span>${fmt(t,1)}</span></div>
+   <div class="row"><span>利润</span><span>¥${fmt(p)}</span></div><div class="row"><span>吨均利润</span><span>${fmt(pp,1)} 元</span></div>
+   <div style="font-size:12px;color:var(--ink-3);margin-top:6px">${note}</div></div>`).join('');
+
+// ---------- 调货人 ----------
+const dispRows=[...group('disp')].map(([k,rows])=>({k,...agg(rows),paths:[...new Set(rows.map(r=>r.path))]}));
+const unpaid=Object.fromEntries(D.commission.map(c=>[c.name,c.unpaid]));
+let dispKey='net';
+function drawDisp(){
+  const rows=[...dispRows].sort((a,b)=>b[dispKey]-a[dispKey]);
+  const svg=$('disp-chart'), w=W(svg), rowH=28, lw=78, h=rows.length*rowH+4;
+  const mx=Math.max(...rows.map(r=>r[dispKey])), sx=v=>lw+(w-lw-70)*v/mx;
+  let s='';
+  rows.forEach((r,i)=>{const y=i*rowH;const tipH=`<b>${esc(r.k)}</b><br>${r.n}车 ${fmt(r.ton,1)}吨<br>利润 ¥${fmt(r.net)} · 吨均 ${fmt(r.ppt,1)}元`;
+    s+=`<text class="lab" x="0" y="${y+rowH/2+4}">${esc(r.k)}</text><rect data-tip="${esc(tipH)}" x="${lw}" y="${y+6}" width="${Math.max(2,sx(r[dispKey])-lw)}" height="${rowH-12}" rx="3" fill="var(--navy)" opacity="${dispKey==='ppt'?.75:.9}"/>`;
+    s+=`<text class="val" x="${sx(r[dispKey])+5}" y="${y+rowH/2+4}">${dispKey==='net'?fmt(r.net):dispKey==='ton'?fmt(r.ton,0)+'吨':fmt(r.ppt,1)+'元'}</text>`;});
+  svg.setAttribute('viewBox',`0 0 ${w} ${h}`); svg.innerHTML=s; bindTips(svg);
+  const tot=agg(T);
+  $('disp-tbl').innerHTML=`<thead><tr><th>调货人</th><th>路径</th><th class="n">车次</th><th class="n">吨位</th><th class="n">利润</th><th class="n">吨均</th><th class="n">提成</th><th class="n">提成未付</th></tr></thead><tbody>`+
+    rows.map(r=>`<tr><td>${esc(r.k)}</td><td>${r.paths.map(p=>`<span class="dot" style="background:${PC[p]}"></span>${p}`).join(' ')}</td><td class="n">${r.n}</td><td class="n">${fmt(r.ton,1)}</td><td class="n">${fmt(r.net)}</td><td class="n">${fmt(r.ppt,1)}</td><td class="n">${fmt(r.cm)}</td><td class="n ${unpaid[r.k]>0?'neg':''}">${fmt(unpaid[r.k]||0)}</td></tr>`).join('')+
+    `<tr class="tot"><td>合计</td><td></td><td class="n">${tot.n}</td><td class="n">${fmt(tot.ton,1)}</td><td class="n">${fmt(tot.net)}</td><td class="n">${fmt(tot.ppt,1)}</td><td class="n">${fmt(tot.cm)}</td><td class="n">${fmt(sum(D.commission,c=>c.unpaid))}</td></tr></tbody>`;
+}
+document.querySelectorAll('#s-disp .seg button').forEach(b=>b.addEventListener('click',()=>{dispKey=b.dataset.k;document.querySelectorAll('#s-disp .seg button').forEach(x=>x.setAttribute('aria-pressed',x===b));drawDisp();}));
+
+// ---------- 货源 ----------
+function simpleTable(id,label,rows){const tot=agg(T);
+  $(id).innerHTML=`<thead><tr><th>${label}</th><th class="n">车次</th><th class="n">吨位</th><th class="n">吨位占比</th><th class="n">结算额(万)</th><th class="n">利润</th><th class="n">吨均</th></tr></thead><tbody>`+
+  rows.map(r=>`<tr><td>${r.label}</td><td class="n">${r.n}</td><td class="n">${fmt(r.ton,1)}</td><td class="n">${fmt(r.ton/tot.ton*100,1)}%</td><td class="n">${wan(r.amt)}</td><td class="n">${fmt(r.net)}</td><td class="n">${fmt(r.ppt,1)}</td></tr>`).join('')+
+  `<tr class="tot"><td>合计</td><td class="n">${tot.n}</td><td class="n">${fmt(tot.ton,1)}</td><td class="n">100%</td><td class="n">${wan(tot.amt)}</td><td class="n">${fmt(tot.net)}</td><td class="n">${fmt(tot.ppt,1)}</td></tr></tbody>`;}
+simpleTable('base-tbl','供货厂 / 货主',[...group('base')].map(([k,r])=>({label:esc(k),...agg(r)})).sort((a,b)=>b.ton-a.ton));
+
+// ---------- 票源 ----------
+const srcRows=[...group('src')].map(([k,r])=>({label:`${esc(k)}`,...agg(r)})).sort((a,b)=>b.ton-a.ton);
+simpleTable('src-tbl','票源',srcRows);
+$('quota').innerHTML = `<div style="font-size:14px;font-weight:600">额度占用</div>`+D.quota.map(q=>{const st=q.pct>=100?'crit':(q.warn_pct&&q.pct>=q.warn_pct)||q.pct>=90?'warn':'ok';
+  const col={crit:'var(--crit)',warn:'var(--warn)',ok:'var(--navy)'}[st];const lab={crit:'超额',warn:'接近上限',ok:'正常'}[st];
+  return `<div class="qrow"><div class="top"><span>${esc(q.name)} <span class="tag ${st}">${lab}</span></span><span class="num">${fmt(q.pct,1)}%</span></div>
+  <div class="meter" style="margin-top:6px"><i style="width:${Math.min(100,q.pct)}%;background:${col}"></i></div>
+  <div class="sub"><span>已用 ${wan(q.used_amount)} 万 / 额度 ${wan(q.quota_amount)} 万（${q.quota_period==='annual'?'全年':'本月'}）</span><span>${q.pct>=100?'超出 '+wan(q.used_amount-q.quota_amount)+' 万':'剩 '+wan(q.quota_amount-q.used_amount)+' 万'}</span></div></div>`;}).join('');
+
+// ---------- 车 / 船 ----------
+$('mode').innerHTML=['车','船'].map(k=>{const r=T.filter(t=>t.ty===k),a=agg(r);return `<div class="cmp"><h3>${k}运 <span style="font-weight:400;color:var(--ink-3);font-size:12px">${a.n} 次</span></h3>
+  <div class="row"><span>吨位</span><span>${fmt(a.ton,1)} 吨</span></div><div class="row"><span>平均每次</span><span>${fmt(a.ton/a.n,1)} 吨</span></div>
+  <div class="row"><span>结算额</span><span>${wan(a.amt)} 万</span></div><div class="row"><span>利润</span><span>¥${fmt(a.net)}</span></div><div class="row"><span>吨均利润</span><span>${fmt(a.ppt,1)} 元</span></div></div>`;}).join('');
+
+// ---------- 单车 ----------
+function drawTop(k){const rows=k==='top'?[...T].sort((a,b)=>b.net-a.net).slice(0,10):[...T].sort((a,b)=>a.net/a.ton-b.net/b.ton).slice(0,10);
+  $('top-tbl').innerHTML=`<thead><tr><th>日期</th><th>车/船号</th><th>路径</th><th>调货人</th><th class="n">吨位</th><th class="n">利润</th><th class="n">吨均</th></tr></thead><tbody>`+
+  rows.map(t=>`<tr><td>${+t.d.slice(5,7)}/${+t.d.slice(8)}</td><td>${esc(t.p)}</td><td><span class="dot" style="background:${PC[t.path]}"></span>${t.path}</td><td>${esc(t.disp)}</td><td class="n">${fmt(t.ton,2)}</td><td class="n">${fmt(t.net)}</td><td class="n">${fmt(t.net/t.ton,1)}</td></tr>`).join('')+'</tbody>';}
+document.querySelectorAll('#s-top .seg button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('#s-top .seg button').forEach(x=>x.setAttribute('aria-pressed',x===b));drawTop(b.dataset.k);}));
+
+// ---------- 待办 ----------
+const risks=[];
+quotaOver.forEach(q=>risks.push(['crit','额度',`<b>${esc(q.name)}</b> 本月票额度已用 ${fmt(q.pct,1)}%（${wan(q.used_amount)} 万 / ${wan(q.quota_amount)} 万），超出 ¥${fmt(q.used_amount-q.quota_amount)}，后续煌烽票源的车需要换票源或等下月额度。`]));
+const up=sum(D.commission,c=>c.unpaid); if(up>0) risks.push(['warn','提成',`调货人提成应付未付 ¥${fmt(up)}（${D.commission.filter(c=>c.unpaid>0).map(c=>esc(c.name)).join('、')}）。`]);
+const noPlate=T.filter(t=>t.p==='（车号待补）'); if(noPlate.length) risks.push(['info','资料',`${noPlate.length} 车缺车号（${noPlate.map(t=>md(t.d)).join('、')} 闫东朋反向），待补。`]);
+risks.push(['info','票款',`开票、回款的逐车登记（三条线）还在补历史数据，这份报告的利润已核对无误，但“已开票 / 已回款”状态暂不作为依据。`]);
+risks.push(['ok','对账',`系统 101 车与财务台账逐车核对完毕，调货人、供货厂、票源、计算路径全部一致，利润差 ¥${fmt(Math.abs(finDiff),2)} 全是财务 INT 取整。`]);
+$('risks').innerHTML=risks.map(([c,t,h])=>`<div class="callout"><span class="tag ${c}">${t}</span><div>${h}</div></div>`).join('');
+$('recon').innerHTML=`财务「发货记录表6」共 ${D.finance.rows} 行，与系统逐车核对：车次、调货人、供货厂、票源、计算路径全部一致（财务 8/29 一行 = 系统两车）。财务利润合计 ¥${fmt(D.finance.fin_total,2)}，系统 ¥${fmt(ALL.net,2)}，差 ¥${fmt(finDiff,2)}，来自财务“实际付款”列使用 INT() 向下取整，每车不到 1 元。`;
+$('foot').innerHTML=`数据来源：废钢供应链系统（${T.length} 车次，结算日期 ${md(d0)} ~ ${md(d1)}），已与财务台账核对。利润为主营净利润，不含票差留存。点击图表可查看明细。`;
+
+function drawAll(){drawWF();drawTrend();drawCum();drawDisp();}
+drawAll(); drawTop('top');
+let rz; addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(drawAll,150);});
+</script>
+
+</body></html>
