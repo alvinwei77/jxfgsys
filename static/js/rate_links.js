@@ -43,7 +43,8 @@ async function loadAll() {
 // 林凯看着像有关系"，根源之一)。现在跨列(colDiff>1)的边改画成"绕到最上方"的曲线，
 // 保证不会跟任何列的节点行重叠；相邻列(colDiff=1)的边不受影响，仍画直线，更清爽。
 async function renderGraph() {
-  const data = await apiGet('/api/rate_links/graph');
+  const asOf = (typeof getRulesAsOf === 'function' && getRulesAsOf()) || todayStr();
+  const data = await apiGet('/api/rate_links/graph?as_of=' + encodeURIComponent(asOf));
   const container = document.getElementById('rate-graph');
   const nodesByType = {};
   COLUMN_ORDER.forEach(t => nodesByType[t] = []);
@@ -398,3 +399,4 @@ async function deleteRow(id) {
 document.getElementById('btn-add-rate').addEventListener('click', () => showForm(null));
 
 loadAll().then(() => { renderTable(); renderGraph(); });
+document.addEventListener('rules-as-of-changed', () => renderGraph());

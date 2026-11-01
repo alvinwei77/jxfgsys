@@ -12,6 +12,16 @@ def page_dashboard():
     return render_template("dashboard.html", active="dashboard")
 
 
+@app.route("/rules")
+def page_rules_hub():
+    return render_template("rules_hub.html", active="rules", rules_sub="hub")
+
+
+@app.route("/setup")
+def page_setup_hub():
+    return render_template("setup_hub.html", active="setup", setup_sub="hub")
+
+
 @app.route("/trips")
 def page_trips():
     return render_template("trips.html", status_list=STATUS_LIST, active="trips")
@@ -19,12 +29,12 @@ def page_trips():
 
 @app.route("/archives")
 def page_archives():
-    return render_template("archives.html", active="archives")
+    return render_template("archives.html", active="setup", setup_sub="archives")
 
 
 @app.route("/quotes")
 def page_quotes():
-    return render_template("quotes.html", active="quotes")
+    return render_template("quotes.html", active="setup", setup_sub="quotes")
 
 
 @app.route("/reports")
@@ -34,12 +44,12 @@ def page_reports():
 
 @app.route("/rate_links")
 def page_rate_links():
-    return render_template("rate_links.html", active="rate_links")
+    return render_template("rate_links.html", active="rules", rules_sub="rates")
 
 
 @app.route("/system")
 def page_system():
-    return render_template("system.html", active="system")
+    return render_template("system.html", active="setup", setup_sub="system")
 
 
 @app.route("/tracking")
@@ -49,13 +59,13 @@ def page_tracking():
 
 @app.route("/chain_rules")
 def page_chain_rules():
-    return render_template("chain_rules.html", active="chain_rules")
+    return render_template("chain_rules.html", active="rules", rules_sub="chains")
 
 
 @app.route("/glossary")
 def page_glossary():
     """术语与操作对照表（C档 2026-10-09）：黑话 ↔ 系统叫法 ↔ 在哪，附常见操作怎么做。"""
-    return render_template("glossary.html", active="glossary")
+    return render_template("glossary.html", active="setup", setup_sub="glossary")
 
 
 @app.route("/favicon.ico")

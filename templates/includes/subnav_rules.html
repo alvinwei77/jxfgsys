@@ -1,0 +1,13 @@
+{# 规则与算价 · 二级导航（费率 + 链条） #}
+<div class="hub-subnav" data-hub="rules">
+  <a href="/rules" class="{{ 'active' if rules_sub == 'hub' else '' }}">本期总览</a>
+  <a href="/rate_links" class="{{ 'active' if rules_sub == 'rates' else '' }}">费率与关系</a>
+  <a href="/chain_rules" class="{{ 'active' if rules_sub == 'chains' else '' }}">链条规则</a>
+</div>
+<div class="hub-period-bar" id="rules-period-bar">
+  <span class="hub-period-label">查看规则生效日：</span>
+  <input type="date" id="rules-as-of" title="选某一天，看这天生效的费率与票源分期">
+  <button type="button" class="btn-sm" id="rules-as-of-today">今天</button>
+  <button type="button" class="btn-sm" id="rules-as-of-period-start">本结算期首日</button>
+  <span class="muted hub-period-meta" id="rules-period-meta"></span>
+</div>

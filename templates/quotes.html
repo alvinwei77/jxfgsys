@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 {% block title %}报价单{% endblock %}
 {% block content %}
+{% include 'includes/subnav_setup.html' %}
+<div class="note-banner" style="margin-bottom:10px;">你方多数按钢厂结算单价直接录车，本页<strong>可选</strong>；不用时可忽略。</div>
 <div class="toolbar">
   <select id="q-mill"></select>
   <select id="q-sheet"></select>

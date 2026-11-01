@@ -650,3 +650,25 @@ async function exportReportPdf(btn) {
   } catch (e) { alert('生成失败：' + e.message); }
   finally { if (btn) { btn.disabled = false; btn.textContent = old; } }
 }
+
+function exportLedger() {
+  window.location.href = '/api/export/ledger';
+}
+
+function initMainNavDropdowns() {
+  document.querySelectorAll('.nav-group').forEach(group => {
+    const btn = group.querySelector('.nav-group-btn');
+    if (!btn) return;
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = group.classList.contains('open');
+      document.querySelectorAll('.nav-group.open').forEach(g => g.classList.remove('open'));
+      if (!open) group.classList.add('open');
+    });
+  });
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.nav-group.open').forEach(g => g.classList.remove('open'));
+  });
+}
+
+document.addEventListener('DOMContentLoaded', initMainNavDropdowns);

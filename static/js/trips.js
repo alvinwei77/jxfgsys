@@ -1087,7 +1087,24 @@ async function editEntryDefaults() {
   toast(`新建默认：接单日期今天｜发货地 ${d.departure_place || '（空）'}｜钢厂 ${mill ? mill.name : '（多个，需手选）'}｜户头 ${acc ? acc.name : '（跟随钢厂）'}`, 4500);
 }
 
-loadArchives().then(() => { applyUrlFilters(); return loadTrips(); }).then(() => {
+loadArchives().then(async () => {
+  applyUrlFilters();
+  if (typeof applyDefaultSettlementPeriodFilter === 'function') {
+    const meta = await applyDefaultSettlementPeriodFilter('f-from', 'f-to');
+    const hint = document.getElementById('trips-period-hint');
+    if (hint && meta) {
+      hint.innerHTML = `列表默认显示本结算期 <b>${meta.period_label}</b>（${meta.period_start}~${meta.period_end}，按结算日期）。<a href="/trips?period=all" class="drill">看全部历史</a>`;
+    }
+  }
+  const q = new URLSearchParams(location.search);
+  if (q.get('period') === 'all') {
+    document.getElementById('f-from').value = '';
+    document.getElementById('f-to').value = '';
+    const hint = document.getElementById('trips-period-hint');
+    if (hint) hint.textContent = '当前显示全部历史车次（结算日期不限）';
+  }
+  return loadTrips();
+}).then(() => {
   applyColumnPrefs();   // 列表为空时也要把隐藏列作用到表头
   const q = new URLSearchParams(location.search);
   // 从别的页面(统计报表-数据完整度)点过来：/trips?open=<id> 直接打开该车次
