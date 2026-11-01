@@ -691,3 +691,5 @@ a.drill:hover { color: var(--blue); border-bottom-color: var(--blue); }
 .mindmap-svg .mm-edge-rate { cursor: pointer; }
 .mindmap-svg .mm-edge-rate:hover line,
 .mindmap-svg .mm-edge-rate:hover path { stroke-width: 2.2; }
+tr.rate-row-highlight { background: #eff6ff; box-shadow: inset 3px 0 0 var(--blue); }
+tr.rate-row-highlight td { background: inherit; }
