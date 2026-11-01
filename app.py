@@ -44,6 +44,17 @@ if __name__ == "__main__":
     # (AirPlay Receiver) 占着所有网卡的 5000 端口，一撞就"端口被占用"起不来（v2.1.0 的 bug）。
     # 不想让手机连：启动前设 SCRAPMETAL_HOST=127.0.0.1
     print(f"=== 废钢供应链系统 v{APP_VERSION} · 电脑打开 http://127.0.0.1:{port} ===", flush=True)
+    print(f"    若浏览器提示「Access to 127.0.0.1 was denied」：先试 http://localhost:{port} ，或看 README「启动打不开的排查」", flush=True)
     if os.environ.get("SCRAPMETAL_HOST", "0.0.0.0") != "127.0.0.1" and not debug:
         mobile.start_lan_server(app, int(os.environ.get("MOBILE_PORT", 5080)))
-    app.run(host="127.0.0.1", port=port, debug=debug)
+    try:
+        app.run(host="127.0.0.1", port=port, debug=debug)
+    except OSError as e:
+        if getattr(e, "errno", None) in (98, 48, 10048):  # Linux/macOS/Windows: address already in use
+            print(
+                f"\n[错误] 端口 {port} 已被占用（macOS 上常见：系统「隔空播放接收器」占 5000）。\n"
+                f"  解决：系统设置 → 通用 → AirDrop 与隔空播放 → 关闭「隔空播放接收器」；\n"
+                f"  或换端口启动：PORT=5001 python3 app.py ，浏览器打开 http://127.0.0.1:5001\n",
+                flush=True,
+            )
+        raise

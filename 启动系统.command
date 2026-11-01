@@ -37,7 +37,16 @@ for p in $OLD_PIDS; do
   fi
 done
 
-echo "启动服务，稍后会自动打开浏览器（如果没有自动打开，请手动访问 http://127.0.0.1:5000 ；手机地址见「系统 → 手机访问」）"
-( sleep 2 && open "http://127.0.0.1:5000" ) &
-
-python3 app.py
+echo "启动服务，稍后会自动打开浏览器（如果没有自动打开，请手动访问 http://localhost:5000 ；手机地址见「系统 → 手机访问」）"
+python3 app.py &
+APP_PID=$!
+for i in $(seq 1 30); do
+  if curl -sf -o /dev/null "http://127.0.0.1:5000/api/version" 2>/dev/null; then
+    ( open "http://localhost:5000" ) &
+    wait $APP_PID
+    exit $?
+  fi
+  sleep 0.5
+done
+echo "服务 15 秒内未就绪：请看上方是否有「端口被占用」等报错；可手动执行 curl -I http://127.0.0.1:5000/"
+wait $APP_PID
