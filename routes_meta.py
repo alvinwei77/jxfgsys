@@ -133,6 +133,129 @@ def _term_row_for_period_start(source_id: int, period_start: str):
     return rows[0] if rows else None
 
 
+def _wizard_entity_name(entity_type, entity_id):
+    if entity_id is None:
+        return None
+    tables = {
+        "account": ("accounts", "name"),
+        "dispatcher": ("dispatchers", "name"),
+        "invoice_source": ("invoice_sources", "name"),
+        "processing_base": ("processing_bases", "name"),
+        "steel_mill": ("steel_mills", "name"),
+    }
+    spec = tables.get(entity_type)
+    if not spec:
+        return f"#{entity_id}"
+    table, col = spec
+    rows = query(f"SELECT {col} AS n FROM {table} WHERE id=?", (entity_id,))
+    return rows[0]["n"] if rows else f"#{entity_id}(已删)"
+
+
+def _attach_wizard_existing_link_ids(items, period_start: str):
+    for it in items:
+        ex = query(
+            """
+            SELECT id FROM rate_links
+            WHERE relation_type=? AND primary_entity_type=?
+              AND ((? IS NULL AND primary_entity_id IS NULL) OR primary_entity_id=?)
+              AND ((secondary_entity_id IS NULL AND ? IS NULL) OR secondary_entity_id=?)
+              AND date(effective_from)=date(?)
+            LIMIT 1
+            """,
+            (
+                it["relation_type"],
+                it["primary_entity_type"],
+                it["primary_entity_id"],
+                it["primary_entity_id"],
+                it["secondary_entity_id"],
+                it["secondary_entity_id"],
+                period_start,
+            ),
+        )
+        it["existing_link_id"] = ex[0]["id"] if ex else None
+
+
+def _build_rate_wizard_from_effective(conn, ref_day: str, period_start: str, relation_type: str):
+    """列出参考日生效的费率组合（改价向导用，不含户头垫资的「全量×票源」展开）。"""
+    catalog = {c["code"]: c for c in engine.RELATION_TYPE_CATALOG}
+    cat = catalog.get(relation_type) or {}
+    ptype = cat.get("primary_type")
+    stype = cat.get("secondary_type")
+    rows = query(
+        """
+        SELECT DISTINCT primary_entity_type, primary_entity_id,
+               secondary_entity_type, secondary_entity_id
+        FROM rate_links
+        WHERE relation_type=?
+          AND date(effective_from) <= date(?)
+          AND (effective_to IS NULL OR date(effective_to) >= date(?))
+        ORDER BY primary_entity_id, secondary_entity_id
+        """,
+        (relation_type, ref_day, ref_day),
+    )
+    items = []
+    for row in rows:
+        pid = row["primary_entity_id"]
+        sid = row["secondary_entity_id"]
+        kwargs = {}
+        if stype:
+            kwargs["secondary_entity_id"] = sid if sid is not None else "__unset__"
+        rate_val = engine.get_effective_rate(conn, relation_type, pid, ref_day, **kwargs)
+        if pid is None:
+            label = f"{cat.get('label', relation_type)} · 全局兜底"
+        elif sid is not None and stype:
+            label = (
+                f"{_wizard_entity_name(ptype, pid)} × {_wizard_entity_name(stype, sid)}"
+                f" · {cat.get('label', relation_type)}"
+            )
+        else:
+            label = f"{_wizard_entity_name(ptype, pid)} · {cat.get('label', relation_type)}"
+        items.append(
+            {
+                "key": f"{relation_type}|{pid}|{sid}",
+                "label": label,
+                "relation_type": relation_type,
+                "primary_entity_type": ptype,
+                "primary_entity_id": pid,
+                "secondary_entity_type": row["secondary_entity_type"] if sid is not None else None,
+                "secondary_entity_id": sid,
+                "rate_unit": cat.get("rate_unit") or "per_ton",
+                "current_rate": rate_val,
+                "proposed_rate": rate_val,
+                "apply_default": False,
+            }
+        )
+    _attach_wizard_existing_link_ids(items, period_start)
+    for it in items:
+        if it["existing_link_id"]:
+            it["apply_default"] = True
+    return items
+
+
+WIZARD_EXTRA_RATE_RELATIONS = [
+    ("commission_dai", "③ 带票提成 M2/M3/M4（元/吨）", "dispatcher_commission_daiPiao"),
+    ("commission_pei", "④ 配票提成 M1/M5（元/吨）", "dispatcher_commission_peiPiao"),
+    ("settlement_pct", "⑤ 户头对外结算点位（%）", "account_external_settlement"),
+    ("settlement_ton_adj", "⑥ 户头对外吨减（元/吨）", "account_external_settlement_ton_adj"),
+    ("service_fee", "⑦ 服务费单价（元/吨）", "service_fee_gross"),
+]
+
+
+def _build_all_wizard_rate_sections(conn, ref_day: str, period_start: str):
+    sections = [
+        {
+            "key": "advance",
+            "title": "② 户头垫资费（元/吨，自本期起 upsert）",
+            "items": _build_rate_wizard_items(conn, ref_day, period_start),
+        }
+    ]
+    for key, title, rel in WIZARD_EXTRA_RATE_RELATIONS:
+        sections.append(
+            {"key": key, "title": title, "items": _build_rate_wizard_from_effective(conn, ref_day, period_start, rel)}
+        )
+    return sections
+
+
 def _build_rate_wizard_items(conn, ref_day: str, period_start: str):
     """户头垫资费：通用档 + 有专项或数值与通用不同的票源档。"""
     catalog = {c["code"]: c for c in engine.RELATION_TYPE_CATALOG}
@@ -190,25 +313,7 @@ def _build_rate_wizard_items(conn, ref_day: str, period_start: str):
                     "apply_default": bool(has_row),
                 }
             )
-    for it in items:
-        ex = query(
-            """
-            SELECT id FROM rate_links
-            WHERE relation_type=? AND primary_entity_type=? AND primary_entity_id=?
-              AND ((secondary_entity_id IS NULL AND ? IS NULL) OR secondary_entity_id=?)
-              AND date(effective_from)=date(?)
-            LIMIT 1
-            """,
-            (
-                it["relation_type"],
-                it["primary_entity_type"],
-                it["primary_entity_id"],
-                it["secondary_entity_id"],
-                it["secondary_entity_id"],
-                period_start,
-            ),
-        )
-        it["existing_link_id"] = ex[0]["id"] if ex else None
+    _attach_wizard_existing_link_ids(items, period_start)
     return items
 
 
@@ -260,7 +365,8 @@ def api_rules_wizard_sheet():
         )
 
     conn = get_db()
-    rate_items = _build_rate_wizard_items(conn, ref_day, period_start)
+    rate_sections = _build_all_wizard_rate_sections(conn, ref_day, period_start)
+    rate_items = [it for sec in rate_sections for it in sec["items"]]
 
     return {
         "period_label": label,
@@ -268,6 +374,7 @@ def api_rules_wizard_sheet():
         "period_end": period_end,
         "ref_day": ref_day,
         "items": items,
+        "rate_sections": rate_sections,
         "rate_items": rate_items,
     }
 
@@ -402,7 +509,9 @@ def api_rules_wizard_apply():
             rate_unit=rr.get("rate_unit") or "per_ton",
             secondary_entity_type=sec_type,
             secondary_entity_id=sec_id,
-            notes="规则向导·垫资费",
+            notes={
+                "account_advance_fee": "规则向导·垫资费",
+            }.get(rr["relation_type"], "规则向导·费率"),
         )
         audit(
             conn,
@@ -411,7 +520,9 @@ def api_rules_wizard_apply():
             "rate_value",
             rr.get("current_rate"),
             float(rv),
-            "规则向导·垫资费",
+            {
+                "account_advance_fee": "规则向导·垫资费",
+            }.get(rr["relation_type"], "规则向导·费率"),
         )
         rate_upserted += 1
     conn.commit()

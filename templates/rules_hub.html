@@ -14,7 +14,7 @@
   <p class="muted" style="font-size:13px;margin:0 0 10px;">
     结算期 <span id="wiz-period-label">—</span>（<span id="wiz-period-range">—</span>）。票源默认复制期前一日分期；垫资列出户头通用档与有专项的票源档。
   </p>
-  <div class="panel-title" style="font-size:13px;margin:12px 0 6px;">① 票源分期（票点 / 额度 / 接单）</div>
+  <div class="panel-title" style="font-size:13px;margin:16px 0 6px;">① 票源分期（票点 / 额度 / 接单）</div>
   <div class="table-scroll"><table id="wiz-table">
     <thead><tr>
       <th><input type="checkbox" id="wiz-check-all" title="全选"></th>
@@ -24,14 +24,7 @@
     </tr></thead>
     <tbody></tbody>
   </table></div>
-  <div class="panel-title" style="font-size:13px;margin:16px 0 6px;">② 户头垫资费（元/吨，自本期起 upsert）</div>
-  <div class="table-scroll"><table id="wiz-rate-table">
-    <thead><tr>
-      <th><input type="checkbox" id="wiz-rate-check-all" title="全选"></th>
-      <th>说明</th><th class="num">当前</th><th class="num">新值</th>
-    </tr></thead>
-    <tbody></tbody>
-  </table></div>
+  <div id="wiz-rate-sections"></div>
   <div class="toolbar" style="margin-top:10px;">
     <button class="btn-primary" id="wiz-apply-btn" onclick="applyWizard()">保存勾选项</button>
     <span class="muted" id="wiz-status"></span>

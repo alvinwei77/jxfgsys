@@ -1,5 +1,30 @@
-/** 规则 hub · 本期改价向导（票源分期 + 户头垫资费） */
+/** 规则 hub · 本期改价向导（票源分期 + 多类费率） */
 let WIZ_SHEET = null;
+
+function renderRateSectionTable(sec, si) {
+  const rates = sec.items || [];
+  if (!rates.length) {
+    return `<div class="panel-title" style="font-size:13px;margin:16px 0 6px;">${escW(sec.title)}</div>
+      <p class="muted" style="font-size:12px;margin:0 0 8px;">参考日无生效档位，请到 <a href="/rate_links">费率与关系</a> 新增。</p>`;
+  }
+  const rows = rates.map((it, idx) => {
+    const chk = it.apply_default ? 'checked' : '';
+    return `<tr data-sec="${si}" data-rate-idx="${idx}">
+      <td><input type="checkbox" class="wiz-rate-apply" ${chk} data-sec="${si}" data-rate-idx="${idx}"></td>
+      <td>${escW(it.label)}${it.existing_link_id ? ' <span class="tag">本期已有</span>' : ''}</td>
+      <td class="num">${fmtNum(it.current_rate, 2)}</td>
+      <td class="num"><input type="number" step="0.01" class="wiz-rate-val" data-sec="${si}" data-rate-idx="${idx}" value="${it.proposed_rate ?? it.current_rate}" style="width:72px;"></td>
+    </tr>`;
+  }).join('');
+  return `<div class="panel-title" style="font-size:13px;margin:16px 0 6px;">${escW(sec.title)}</div>
+    <div class="table-scroll"><table class="wiz-rate-table">
+      <thead><tr>
+        <th><input type="checkbox" class="wiz-rate-check-all" data-sec="${si}" title="全选本表"></th>
+        <th>说明</th><th class="num">当前</th><th class="num">新值</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>`;
+}
 
 async function loadWizardSheet() {
   const asOf = getRulesAsOf() || (await fetchSettlementPeriodMeta()).as_of_today;
@@ -22,19 +47,10 @@ async function loadWizardSheet() {
       <td><input type="text" class="wiz-inp" data-k="notes" data-idx="${idx}" value="${escW(p.notes || '')}" style="width:120px;"></td>
     </tr>`;
   }).join('');
-  const rtbody = document.querySelector('#wiz-rate-table tbody');
-  const rates = WIZ_SHEET.rate_items || [];
-  rtbody.innerHTML = rates.map((it, idx) => {
-    const chk = it.apply_default ? 'checked' : '';
-    return `<tr data-rate-idx="${idx}">
-      <td><input type="checkbox" class="wiz-rate-apply" ${chk} data-rate-idx="${idx}"></td>
-      <td>${escW(it.label)}${it.existing_link_id ? ' <span class="tag">本期已有</span>' : ''}</td>
-      <td class="num">${fmtNum(it.current_rate, 2)}</td>
-      <td class="num"><input type="number" step="0.01" class="wiz-rate-val" data-rate-idx="${idx}" value="${it.proposed_rate ?? it.current_rate}" style="width:72px;"></td>
-    </tr>`;
-  }).join('') || '<tr><td colspan="4" class="empty-hint">无垫资档位</td></tr>';
+  const sections = WIZ_SHEET.rate_sections || [{ title: '② 户头垫资费', items: WIZ_SHEET.rate_items || [] }];
+  const host = document.getElementById('wiz-rate-sections');
+  if (host) host.innerHTML = sections.map((sec, si) => renderRateSectionTable(sec, si)).join('');
   document.getElementById('wiz-check-all').checked = false;
-  document.getElementById('wiz-rate-check-all').checked = false;
   document.getElementById('wiz-status').textContent = '';
 }
 
@@ -60,10 +76,11 @@ function collectWizardItem(idx) {
   };
 }
 
-function collectRateItem(idx) {
-  const it = WIZ_SHEET.rate_items[idx];
-  const inp = document.querySelector(`.wiz-rate-val[data-rate-idx="${idx}"]`);
-  const apply = document.querySelector(`.wiz-rate-apply[data-rate-idx="${idx}"]`)?.checked;
+function collectRateItem(si, idx) {
+  const sections = WIZ_SHEET.rate_sections || [{ items: WIZ_SHEET.rate_items || [] }];
+  const it = sections[si].items[idx];
+  const inp = document.querySelector(`.wiz-rate-val[data-sec="${si}"][data-rate-idx="${idx}"]`);
+  const apply = document.querySelector(`.wiz-rate-apply[data-sec="${si}"][data-rate-idx="${idx}"]`)?.checked;
   return {
     ...it,
     apply,
@@ -72,20 +89,29 @@ function collectRateItem(idx) {
   };
 }
 
+function allRateItemsForApply() {
+  const sections = WIZ_SHEET.rate_sections || [{ items: WIZ_SHEET.rate_items || [] }];
+  const out = [];
+  sections.forEach((sec, si) => {
+    (sec.items || []).forEach((_, idx) => out.push(collectRateItem(si, idx)));
+  });
+  return out;
+}
+
 async function applyWizard() {
   if (!WIZ_SHEET) return;
   const btn = document.getElementById('wiz-apply-btn');
   btn.disabled = true;
   const items = WIZ_SHEET.items.map((_, idx) => collectWizardItem(idx));
-  const rate_items = (WIZ_SHEET.rate_items || []).map((_, idx) => collectRateItem(idx));
+  const rate_items = allRateItemsForApply();
   const n = items.filter(i => i.apply).length;
   const nr = rate_items.filter(i => i.apply).length;
   if (!n && !nr) {
-    alert('请至少勾选一个票源分期或垫资档位');
+    alert('请至少勾选一个票源分期或费率档位');
     btn.disabled = false;
     return;
   }
-  if (!confirm(`确认写入？票源分期 ${n} 条 · 垫资费 ${nr} 条（自 ${WIZ_SHEET.period_start} 起）`)) {
+  if (!confirm(`确认写入？票源分期 ${n} 条 · 费率 ${nr} 条（自 ${WIZ_SHEET.period_start} 起）`)) {
     btn.disabled = false;
     return;
   }
@@ -97,7 +123,7 @@ async function applyWizard() {
       rate_items,
     });
     document.getElementById('wiz-status').textContent =
-      `分期 新${res.created}/改${res.updated} · 垫资 ${res.rate_upserted || 0} · 跳过 ${res.skipped}`;
+      `分期 新${res.created}/改${res.updated} · 费率 ${res.rate_upserted || 0} · 跳过 ${res.skipped}`;
     if (window.toast) toast(document.getElementById('wiz-status').textContent);
     await loadWizardSheet();
     if (typeof loadRulesHub === 'function') loadRulesHub();
@@ -113,8 +139,10 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('wiz-check-all')?.addEventListener('change', (e) => {
     document.querySelectorAll('.wiz-apply').forEach(c => { c.checked = e.target.checked; });
   });
-  document.getElementById('wiz-rate-check-all')?.addEventListener('change', (e) => {
-    document.querySelectorAll('.wiz-rate-apply').forEach(c => { c.checked = e.target.checked; });
+  document.getElementById('wiz-rate-sections')?.addEventListener('change', (e) => {
+    if (!e.target.classList.contains('wiz-rate-check-all')) return;
+    const si = e.target.dataset.sec;
+    document.querySelectorAll(`.wiz-rate-apply[data-sec="${si}"]`).forEach(c => { c.checked = e.target.checked; });
   });
   loadWizardSheet();
 });
