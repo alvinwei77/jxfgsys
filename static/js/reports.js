@@ -326,10 +326,10 @@ async function openEntityDetail(kind, id) {
 
 // 一键导出「经营报告（分期与专题）」Excel：①总览/各期明细/调货人工资/量补汇总/票源额度水位。
 // 与台账导出一样走浏览器原生下载（后端返回带 Content-Disposition 的文件流），缺省=库中全部期。
-function exportOpsReportXlsx(btn) {
+function exportOpsReportXlsx(btn, periodsQuery) {
   if (btn) { btn.disabled = true; btn.dataset.orig = btn.textContent; btn.textContent = '生成中…'; }
-  // fetch 更稳：下载完成/失败都能恢复按钮，且能感知后端报错
-  fetch('/api/export/ops_report').then(r => {
+  const url = '/api/export/ops_report' + (periodsQuery ? ('?periods=' + encodeURIComponent(periodsQuery)) : '');
+  fetch(url).then(r => {
     if (!r.ok) return r.json().then(j => { throw new Error(j.error || ('HTTP ' + r.status)); });
     const cd = r.headers.get('Content-Disposition') || '';
     const m = cd.match(/filename\*?=(?:UTF-8'')?"?([^";]+)"?/);
@@ -343,4 +343,18 @@ function exportOpsReportXlsx(btn) {
   }).catch(e => { alert('导出失败：' + e.message); }).finally(() => {
     if (btn) { btn.disabled = false; btn.textContent = btn.dataset.orig; }
   });
+}
+
+/** 按当前统计 banner 所在结算期导出经营报告（非报表日期内的逐车，而是 ops 报告里的「2026-11期」sheet） */
+async function exportOpsReportForFilter() {
+  let periodKey = '';
+  if (typeof fetchSettlementPeriodMeta === 'function') {
+    const meta = await fetchSettlementPeriodMeta();
+    periodKey = (meta.period_label || '').replace(/期$/, '');
+  }
+  if (!periodKey) {
+    alert('无法解析结算期标签');
+    return;
+  }
+  exportOpsReportXlsx(null, periodKey);
 }
