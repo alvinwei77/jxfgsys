@@ -32,6 +32,27 @@
 <div class="grid-stats" id="r-stats"></div>
 <div id="r-profit-formula"></div>
 
+<div class="card" id="r-calendar-card">
+  <div class="panel-title-row">
+    <div class="panel-title">日历格</div>
+    <div class="tabs-inline" id="r-cal-metric-tabs">
+      <button type="button" data-m="tonnage" class="active" onclick="setCalendarMetric('tonnage')">吨位</button>
+      <button type="button" data-m="trip_count" onclick="setCalendarMetric('trip_count')">车次</button>
+      <button type="button" data-m="profit" onclick="setCalendarMetric('profit')">利润</button>
+    </div>
+  </div>
+  <p class="muted" style="font-size:12px;margin:0 0 10px;">按<strong id="r-cal-field-label">结算日期</strong>逐日汇总；格内数字跟上方筛选一致，点格子下钻当日车次。灰色=不在当前起止日期范围内。</p>
+  <div class="cal-nav">
+    <button type="button" class="btn-sm" onclick="shiftCalendarMonth(-1)">‹ 上月</button>
+    <span class="cal-nav-title" id="r-cal-title">—</span>
+    <button type="button" class="btn-sm" onclick="shiftCalendarMonth(1)">下月 ›</button>
+    <button type="button" class="btn-sm" onclick="resetCalendarMonth()">回到筛选月</button>
+  </div>
+  <div class="cal-weekdays" id="r-cal-weekdays"></div>
+  <div class="cal-grid" id="r-cal-grid"></div>
+  <div class="cal-footer muted" id="r-cal-footer"></div>
+</div>
+
 <div class="card">
   <div class="panel-title-row">
     <div class="panel-title">趋势</div>
