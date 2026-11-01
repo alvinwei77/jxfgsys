@@ -23,16 +23,38 @@ def _period_label_cn(ref_date: str) -> str:
 
 @app.route("/api/meta/current_settlement_period")
 def api_current_settlement_period():
-    """默认结算周期（26~次25），供统计/录入/规则 hub 共用。"""
+    """默认结算周期（26~次25），供统计/录入/规则 hub 共用。
+
+    若「日历今天所在期」内还没有任何结算车次（新期头几天常见），
+    suggested_filter_* 回退到上一结算期，避免统计/日历整页空白。
+    """
     today = dt.date.today().isoformat()
     start, end = get_period_bounds(today)
     label = _period_label_cn(today)
+    conn = get_db()
+    n = conn.execute(
+        """SELECT COUNT(*) FROM trips WHERE status!='voided' AND settlement_date IS NOT NULL
+           AND date(settlement_date) BETWEEN date(?) AND date(?)""",
+        (start, end),
+    ).fetchone()[0]
+    sug_start, sug_end, sug_label = start, end, label
+    fallback = False
+    if n == 0:
+        prev_ref = (dt.date.fromisoformat(start) - dt.timedelta(days=1)).isoformat()
+        sug_start, sug_end = get_period_bounds(prev_ref)
+        sug_label = _period_label_cn(sug_start)
+        fallback = True
     return {
         "as_of_today": today,
         "period_label": label,
         "period_start": start,
         "period_end": end,
         "period_rule": "每月26日 ~ 次月25日（与量补/月度票额窗口一致）",
+        "trip_count_in_current_period": n,
+        "suggested_filter_start": sug_start,
+        "suggested_filter_end": sug_end,
+        "suggested_filter_label": sug_label,
+        "filter_fallback_previous": fallback,
     }
 
 

@@ -24,8 +24,21 @@ async function initReports() {
     const banner = document.getElementById('reports-period-banner');
     if (banner && meta) {
       banner.hidden = false;
-      banner.querySelector('.period-label').textContent = meta.period_label;
-      banner.querySelector('.period-range').textContent = `${meta.period_start} ~ ${meta.period_end}`;
+      const label = meta.suggested_filter_label || meta.period_label;
+      const ps = meta.suggested_filter_start || meta.period_start;
+      const pe = meta.suggested_filter_end || meta.period_end;
+      banner.querySelector('.period-label').textContent = label;
+      banner.querySelector('.period-range').textContent = `${ps} ~ ${pe}`;
+      const fb = document.getElementById('reports-period-fallback');
+      if (fb) {
+        if (meta.filter_fallback_previous) {
+          fb.hidden = false;
+          fb.textContent = `（${meta.period_label} 尚无结算车次，已自动显示上一期 ${label}）`;
+        } else {
+          fb.hidden = true;
+          fb.textContent = '';
+        }
+      }
     }
   }
   CAL_YEAR = null;
@@ -105,9 +118,11 @@ function setCalendarMetric(m) {
 }
 
 function calendarMonthFromFilter() {
+  const to = document.getElementById('r-to')?.value;
   const from = document.getElementById('r-from')?.value;
-  if (from) {
-    const d = new Date(from + 'T00:00:00');
+  const pick = to || from;
+  if (pick) {
+    const d = new Date(pick + 'T00:00:00');
     return { year: d.getFullYear(), month: d.getMonth() + 1 };
   }
   const t = new Date();
@@ -469,7 +484,7 @@ async function exportOpsReportForFilter() {
   }
   if (!periodsQuery && typeof fetchSettlementPeriodMeta === 'function') {
     const meta = await fetchSettlementPeriodMeta();
-    periodsQuery = (meta.period_label || '').replace(/期$/, '');
+    periodsQuery = (meta.suggested_filter_label || meta.period_label || '').replace(/期$/, '');
   }
   if (!periodsQuery) {
     alert('无法解析结算期标签');
