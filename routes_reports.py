@@ -431,6 +431,45 @@ def analytics_completeness():
     return jsonify({"total_trips": len(trips), "rules": out})
 
 
+@app.route("/api/analytics/invoice_in_gap")
+def analytics_invoice_in_gap():
+    """经过我方票源、已结算但仍缺进项票号（且未标库存票）的车次。"""
+    conn = get_db()
+    period = (request.args.get("period") or "current").lower()
+    date_from = (request.args.get("date_from") or "")[:10] or None
+    date_to = (request.args.get("date_to") or "")[:10] or None
+    if period == "current" and not date_from:
+        today = dt.date.today().isoformat()
+        date_from, date_to = calc.get_period_bounds(today)
+    rows = conn.execute(
+        """
+        SELECT t.id, t.plate_no, t.settlement_date, t.settlement_amount_total,
+               t.settlement_tonnage_total, t.status, s.name AS source_name, s.id AS source_id
+        FROM trips t
+        JOIN invoice_sources s ON s.id = t.invoice_source_id
+        WHERE t.status NOT IN ('voided', 'reported', 'arrived')
+          AND s.settlement_type = 'pass_through'
+          AND COALESCE(t.invoice_in_stock, 0) = 0
+          AND (t.invoice_in_no IS NULL OR trim(t.invoice_in_no) = '')
+          AND (? IS NULL OR date(t.settlement_date) >= date(?))
+          AND (? IS NULL OR date(t.settlement_date) <= date(?))
+        ORDER BY date(t.settlement_date) DESC, t.id DESC
+        LIMIT 500
+        """,
+        (date_from, date_from, date_to, date_to),
+    ).fetchall()
+    items = [dict(r) for r in rows]
+    return jsonify(
+        {
+            "date_from": date_from,
+            "date_to": date_to,
+            "count": len(items),
+            "total_settlement": sum(float(r["settlement_amount_total"] or 0) for r in items),
+            "trips": items,
+        }
+    )
+
+
 # ---------------------------------------------------------------------------
 # v2：首页"待办与预警"（2026-09-22）。每条都带跳转链接，点进去就是要处理的那几车/那个页面。
 # level: danger 需要马上处理 / warn 近期要处理 / info 提醒
@@ -511,6 +550,92 @@ def api_alerts():
         add("warn", f"{len(drift)} 车利润和上次核对时不一样",
             f"车次本身没改过，合计变动 ¥{sum(d['diff'] for d in drift):+,.2f}；多半是改了费率/档案/规则，看一眼没问题就点「以当前为准」",
             "/system?tab=verify", len(drift))
+    # 9. 禄国票源累计吨位上限（系统外监控口径，默认 1000 吨/结算期）
+    luguo_cap = float(_settings.get(conn, "luguo_ton_cap", 1000.0))
+    luguo_id = _settings.get(conn, "luguo_source_id", None)
+    if luguo_id in (None, ""):
+        luguo_row = conn.execute(
+            "SELECT id, name FROM invoice_sources WHERE name LIKE '%禄国%' LIMIT 1"
+        ).fetchone()
+        luguo_id = luguo_row["id"] if luguo_row else None
+    else:
+        luguo_id = int(luguo_id)
+    if luguo_id:
+        ps, pe = calc.get_period_bounds(today.isoformat())
+        luguo_ton = conn.execute(
+            """SELECT COALESCE(SUM(settlement_tonnage_total), 0) FROM trips
+               WHERE invoice_source_id=? AND status!='voided'
+                 AND settlement_date IS NOT NULL
+                 AND date(settlement_date) BETWEEN date(?) AND date(?)""",
+            (luguo_id, ps, pe),
+        ).fetchone()[0]
+        luguo_name = conn.execute("SELECT name FROM invoice_sources WHERE id=?", (luguo_id,)).fetchone()
+        ln = luguo_name["name"] if luguo_name else "禄国"
+        href = f"/trips?invoice_source_id={luguo_id}&exclude_voided=1&date_field=settlement_date&date_from={ps}&date_to={pe}"
+        if luguo_ton >= luguo_cap:
+            add("danger", f"{ln} 本期已 {luguo_ton:,.0f} 吨", f"超过累计上限 {luguo_cap:,.0f} 吨（系统外监控）", href)
+        elif luguo_ton >= luguo_cap * 0.8:
+            add("warn", f"{ln} 本期 {luguo_ton:,.0f}/{luguo_cap:,.0f} 吨", "接近累计吨位上限", href)
+    # 10. 带票提成「1000 吨/期」门槛（档案 notes 含 1000 的 daiPiao 档）
+    ps, pe = calc.get_period_bounds(today.isoformat())
+    dai_tpl = [
+        r[0]
+        for r in conn.execute(
+            "SELECT DISTINCT template_id FROM template_nodes WHERE calc_rule_config LIKE '%dispatcher_commission_daiPiao%'"
+        ).fetchall()
+    ]
+    if dai_tpl:
+        ph = ",".join("?" * len(dai_tpl))
+        rate_rows = conn.execute(
+            """SELECT r.primary_entity_id, r.rate_value, r.notes, d.name
+               FROM rate_links r JOIN dispatchers d ON d.id=r.primary_entity_id
+               WHERE r.relation_type='dispatcher_commission_daiPiao' AND r.rate_value > 0
+                 AND date(r.effective_from)<=date(?) AND (r.effective_to IS NULL OR date(r.effective_to)>=date(?))
+                 AND (r.notes LIKE '%1000%' OR r.notes LIKE '%≥1000%')""",
+            (today.isoformat(), today.isoformat()),
+        ).fetchall()
+        seen_disp = set()
+        for rr in rate_rows:
+            did = rr["primary_entity_id"]
+            if did in seen_disp:
+                continue
+            seen_disp.add(did)
+            ton = conn.execute(
+                f"""SELECT COALESCE(SUM(settlement_tonnage_total), 0) FROM trips
+                    WHERE dispatcher_id=? AND template_id IN ({ph})
+                      AND status IN ('settled','invoiced','closed')
+                      AND settlement_date IS NOT NULL
+                      AND date(settlement_date) BETWEEN date(?) AND date(?)""",
+                [did, *dai_tpl, ps, pe],
+            ).fetchone()[0]
+            if ton < 1000:
+                add(
+                    "info",
+                    f"{rr['name']} 带票 {ton:,.0f}/1000 吨",
+                    "未达当期带票提成门槛（整期累计≥1000 吨才计提）",
+                    f"/reports?period=current",
+                )
+    # 11. 进项票缺口（pass_through 缺进项票号）
+    gap_n = conn.execute(
+        """
+        SELECT COUNT(*) FROM trips t
+        JOIN invoice_sources s ON s.id=t.invoice_source_id
+        WHERE t.status NOT IN ('voided','reported','arrived')
+          AND s.settlement_type='pass_through'
+          AND COALESCE(t.invoice_in_stock,0)=0
+          AND (t.invoice_in_no IS NULL OR trim(t.invoice_in_no)='')
+          AND date(t.settlement_date) BETWEEN date(?) AND date(?)
+        """,
+        (ps, pe),
+    ).fetchone()[0]
+    if gap_n:
+        add(
+            "warn",
+            f"本期 {gap_n} 车缺进项票号",
+            "经过我方票源、已结算但未录进项票（未标库存票）",
+            f"/invoice_in_gap?period=current",
+            gap_n,
+        )
     order = {"danger": 0, "warn": 1, "info": 2}
     out.sort(key=lambda x: order[x["level"]])
     return jsonify(out)

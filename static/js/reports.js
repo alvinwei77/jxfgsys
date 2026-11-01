@@ -347,14 +347,23 @@ function exportOpsReportXlsx(btn, periodsQuery) {
 
 /** 按当前统计 banner 所在结算期导出经营报告（非报表日期内的逐车，而是 ops 报告里的「2026-11期」sheet） */
 async function exportOpsReportForFilter() {
-  let periodKey = '';
-  if (typeof fetchSettlementPeriodMeta === 'function') {
-    const meta = await fetchSettlementPeriodMeta();
-    periodKey = (meta.period_label || '').replace(/期$/, '');
+  const from = document.getElementById('r-from')?.value;
+  const to = document.getElementById('r-to')?.value;
+  let periodsQuery = '';
+  if (from && to) {
+    try {
+      const r = await apiGet('/api/meta/periods_in_range?date_from=' + encodeURIComponent(from) +
+        '&date_to=' + encodeURIComponent(to));
+      if (r.periods && r.periods.length) periodsQuery = r.periods.join(',');
+    } catch (e) { /* fallback below */ }
   }
-  if (!periodKey) {
+  if (!periodsQuery && typeof fetchSettlementPeriodMeta === 'function') {
+    const meta = await fetchSettlementPeriodMeta();
+    periodsQuery = (meta.period_label || '').replace(/期$/, '');
+  }
+  if (!periodsQuery) {
     alert('无法解析结算期标签');
     return;
   }
-  exportOpsReportXlsx(null, periodKey);
+  exportOpsReportXlsx(null, periodsQuery);
 }

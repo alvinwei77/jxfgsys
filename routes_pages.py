@@ -57,6 +57,11 @@ def page_tracking():
     return render_template("tracking.html", active="tracking")
 
 
+@app.route("/invoice_in_gap")
+def page_invoice_in_gap():
+    return render_template("invoice_in_gap.html", active="tracking")
+
+
 @app.route("/chain_rules")
 def page_chain_rules():
     return render_template("chain_rules.html", active="rules", rules_sub="chains")
