@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}进项票缺口{% endblock %}
+{% block header_actions %}
+  <a class="btn-link" href="/tracking">回款追踪 ›</a>
+{% endblock %}
+{% block content %}
+<div class="note-banner">
+  列出<strong>经过我方票源</strong>（pass_through）、已结算但仍<strong>未录进项票号</strong>且未勾选「库存票」的车次。补录票号请在<strong>车次详情</strong>或按链路到<strong>回款追踪</strong>处理。
+</div>
+<div class="toolbar">
+  <span class="muted" id="iig-range">—</span>
+  <div class="spacer"></div>
+  <button class="btn-sm" onclick="loadInvoiceInGap('current')">本结算期</button>
+  <button class="btn-sm" onclick="loadInvoiceInGap('all')">全部历史</button>
+</div>
+<div class="card">
+  <div class="panel-title-row">
+    <div class="panel-title">缺进项票车次</div>
+    <span class="muted" id="iig-sum"></span>
+  </div>
+  <div class="table-scroll">
+    <table id="iig-table">
+      <thead><tr>
+        <th>结算日</th><th>车牌</th><th>票源</th><th class="num">吨位</th><th class="num">结算额</th><th>状态</th><th></th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script src="/static/js/invoice_in_gap.js"></script>
+{% endblock %}

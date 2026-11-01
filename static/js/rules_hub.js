@@ -18,6 +18,24 @@ async function loadRulesHub() {
   document.getElementById('rh-templates').innerHTML = (data.flow_templates || []).map(ft =>
     `<div class="rh-tpl-row"><span>${esc(ft.short_name || ft.name)}</span><span class="muted">${ft.trip_count} 车在用的</span></div>`
   ).join('') || '<span class="muted">无模板</span>';
+  loadRelationCalcMap();
+}
+
+async function loadRelationCalcMap() {
+  const table = document.getElementById('rh-calc-map');
+  if (!table) return;
+  const data = await apiGet('/api/rules/relation_calc_map');
+  const tbody = table.querySelector('tbody');
+  if (!data.relations || !data.relations.length) {
+    tbody.innerHTML = '<tr><td colspan="2" class="empty-hint">暂无映射</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.relations.map(rel => {
+    const nodes = rel.nodes.map(n =>
+      `<a href="/chain_rules?template=${encodeURIComponent(n.template_code)}">${esc(n.template_name)}</a> · ${esc(n.node_label)}`
+    ).join('<br>');
+    return `<tr><td class="nowrap">${esc(rel.label)}</td><td>${nodes}</td></tr>`;
+  }).join('');
 }
 
 function esc(s) {

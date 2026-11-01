@@ -545,3 +545,66 @@ def api_rules_mindmap():
         "nodes": graph.get("nodes") or [],
         "edges": graph.get("edges") or [],
     }
+
+
+@app.route("/api/meta/periods_in_range")
+def api_periods_in_range():
+    """统计筛选日期范围内覆盖的结算期标签（用于导出经营报告 Excel）。"""
+    date_from = (request.args.get("date_from") or "")[:10]
+    date_to = (request.args.get("date_to") or "")[:10]
+    if not date_from or not date_to:
+        return jsonify({"error": "需要 date_from 与 date_to"}), 400
+    try:
+        d0 = dt.date.fromisoformat(date_from)
+        d1 = dt.date.fromisoformat(date_to)
+    except ValueError:
+        return jsonify({"error": "日期格式无效"}), 400
+    if d1 < d0:
+        d0, d1 = d1, d0
+    keys = []
+    seen = set()
+    d = d0
+    while d <= d1:
+        label = _period_label_cn(d.isoformat()).replace("期", "")
+        if label not in seen:
+            seen.add(label)
+            keys.append(label)
+        d += dt.timedelta(days=1)
+    return {"date_from": d0.isoformat(), "date_to": d1.isoformat(), "periods": keys}
+
+
+@app.route("/api/rules/relation_calc_map")
+def api_rules_relation_calc_map():
+    """费率类型 ↔ 链条模板算价节点（只读对照，供规则 hub 理解算价链路）。"""
+    import json
+
+    catalog = {c["code"]: c["label"] for c in engine.RELATION_TYPE_CATALOG}
+    relations = {code: [] for code in catalog}
+    templates = query("SELECT id, code, name, short_name FROM flow_templates ORDER BY id")
+    for t in templates:
+        nodes = query(
+            "SELECT node_key, label, calc_rule_config FROM template_nodes WHERE template_id=? ORDER BY seq",
+            (t["id"],),
+        )
+        for n in nodes:
+            cfg = n["calc_rule_config"] or ""
+            if not cfg:
+                continue
+            for code in catalog:
+                if code not in cfg:
+                    continue
+                relations[code].append(
+                    {
+                        "template_id": t["id"],
+                        "template_code": t["code"],
+                        "template_name": t["short_name"] or t["name"],
+                        "node_key": n["node_key"],
+                        "node_label": n["label"],
+                    }
+                )
+    out = [
+        {"code": code, "label": catalog[code], "nodes": relations[code]}
+        for code in catalog
+        if relations[code]
+    ]
+    return {"relations": out, "hint": "改费率走向导或「费率与关系」；改公式结构仍到「链条规则」。"}

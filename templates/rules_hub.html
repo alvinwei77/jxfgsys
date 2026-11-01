@@ -62,6 +62,17 @@
     <p class="muted" style="margin-top:8px;"><a href="/chain_rules">一眼看懂 / 编辑流程 ›</a></p>
   </div>
 </div>
+<div class="card">
+  <div class="panel-title-row">
+    <div class="panel-title">费率 ↔ 算价节点（只读对照）</div>
+    <a class="btn-link" href="/chain_rules">链条规则 ›</a>
+  </div>
+  <p class="muted" style="font-size:12px;margin:0 0 8px;">每种「费率与关系」类型在哪些链条模板、哪个节点被引用（不改公式，仅帮助对照改价影响面）。</p>
+  <div class="table-scroll"><table id="rh-calc-map">
+    <thead><tr><th>费率类型</th><th>引用节点</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+</div>
 {% endblock %}
 {% block extra_scripts %}
 <script src="/static/js/rules_period.js"></script>
