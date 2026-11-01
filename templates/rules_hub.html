@@ -3,9 +3,33 @@
 {% block content %}
 {% include 'includes/subnav_rules.html' %}
 <div class="note-banner">
-  按月/结算期维护：每月新票源、票点、额度请在 <strong>基础档案 → 票源额度分期</strong> 与 <strong>费率与关系</strong> 里按生效日录入。
-  链条怎么走、钱怎么算分别在「链条规则」与模板节点（算钱仍由引擎执行）。后续可在此页升级为思维导图式编排。
+  每月新票源/票点/额度：用下方 <strong>本期改价向导</strong> 一次生成分期行；垫资/提成等数值仍到 <a href="/rate_links">费率与关系</a> 续期。
 </div>
+
+<div class="card" id="rules-wizard-card">
+  <div class="panel-title-row">
+    <div class="panel-title">本期改价向导（票源分期）</div>
+    <button type="button" class="btn-sm" onclick="loadWizardSheet()">重新加载</button>
+  </div>
+  <p class="muted" style="font-size:13px;margin:0 0 10px;">
+    默认复制「结算期开始前一天」命中的分期到 <span id="wiz-period-label">—</span>（<span id="wiz-period-range">—</span>）。
+    只勾选需要写入的票源，点保存。
+  </p>
+  <div class="table-scroll"><table id="wiz-table">
+    <thead><tr>
+      <th><input type="checkbox" id="wiz-check-all" title="全选"></th>
+      <th>票源</th><th>类型</th>
+      <th class="num">票点%</th><th class="num">额度</th><th class="num">预警</th>
+      <th>接单</th><th>备注</th>
+    </tr></thead>
+    <tbody></tbody>
+  </table></div>
+  <div class="toolbar" style="margin-top:10px;">
+    <button class="btn-primary" id="wiz-apply-btn" onclick="applyWizard()">保存勾选的分期</button>
+    <span class="muted" id="wiz-status"></span>
+  </div>
+</div>
+
 <div class="card">
   <div class="panel-title-row">
     <div class="panel-title">本结算期票源分期（命中参考日）</div>
@@ -32,4 +56,5 @@
 {% block extra_scripts %}
 <script src="/static/js/rules_period.js"></script>
 <script src="/static/js/rules_hub.js"></script>
+<script src="/static/js/rules_wizard.js"></script>
 {% endblock %}
