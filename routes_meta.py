@@ -297,3 +297,21 @@ def api_rules_wizard_apply():
             created += 1
     conn.commit()
     return jsonify({"created": created, "updated": updated, "skipped": skipped})
+
+
+@app.route("/api/rules/mindmap")
+def api_rules_mindmap():
+    """只读业务关系图数据（与费率页同口径），供规则 hub 思维导图视图。"""
+    as_of = (request.args.get("as_of") or dt.date.today().isoformat())[:10]
+    from routes_archives import rate_link_graph
+
+    with app.test_request_context("/api/rate_links/graph", query_string={"as_of": as_of}):
+        resp = rate_link_graph()
+        graph = resp.get_json()
+    return {
+        "as_of": as_of,
+        "period_start": get_period_bounds(as_of)[0],
+        "period_end": get_period_bounds(as_of)[1],
+        "nodes": graph.get("nodes") or [],
+        "edges": graph.get("edges") or [],
+    }

@@ -41,6 +41,15 @@
   </table></div>
 </div>
 <div class="dash-row">
+  <div class="card chart-card" style="grid-column:1/-1;">
+    <div class="panel-title-row">
+      <div class="panel-title">业务关系一览（只读 · 思维导图）</div>
+      <a class="btn-link" href="/rate_links">编辑费率 ›</a>
+    </div>
+    <div id="rules-mindmap"></div>
+  </div>
+</div>
+<div class="dash-row">
   <div class="card">
     <div class="panel-title">费率条数（参考日生效）</div>
     <div id="rh-rate-count" class="stat-big">—</div>
@@ -57,4 +66,5 @@
 <script src="/static/js/rules_period.js"></script>
 <script src="/static/js/rules_hub.js"></script>
 <script src="/static/js/rules_wizard.js"></script>
+<script src="/static/js/rules_mindmap.js"></script>
 {% endblock %}

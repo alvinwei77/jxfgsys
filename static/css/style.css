@@ -686,3 +686,5 @@ a.drill:hover { color: var(--blue); border-bottom-color: var(--blue); }
   display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
 }
 .profit-formula-details[open] summary { margin-bottom: 8px; }
+.mindmap-svg .mm-node { cursor: pointer; }
+.mindmap-svg .mm-node:hover rect { stroke: var(--blue); fill: var(--blue-light); }
