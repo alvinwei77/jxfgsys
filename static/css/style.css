@@ -498,6 +498,9 @@ input.date-sm { width: 132px; }
 .cr-plain-line b { color: var(--gray-900); }
 .cr-template-tabs { margin: 10px 0 4px; }
 .mo-playbook { margin: 0; padding-left: 1.25rem; line-height: 1.75; font-size: 13px; color: var(--gray-700); }
+.rate-mill-row { cursor: pointer; background: var(--gray-50); }
+.rate-mill-row td { font-size: 13px; padding: 10px 12px !important; }
+.mo-playbook { margin: 0; padding-left: 1.25rem; line-height: 1.75; font-size: 13px; color: var(--gray-700); }
 
 /* ---- 术语与操作对照表（C档）---- */
 .glossary-table td { vertical-align: top; font-size: 13px; line-height: 1.6; }

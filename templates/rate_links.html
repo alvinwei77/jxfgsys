@@ -3,12 +3,18 @@
 {% block content %}
 {% include 'includes/subnav_rules.html' %}
 <div id="rate-focus-banner" class="note-banner" style="display:none;"></div>
+<div id="rate-open-period-box" class="card" style="display:none;border-color:#bfdbfe;background:var(--blue-light);"></div>
 <div class="card chart-card">
   <div class="toolbar"><div style="font-size:13px;color:var(--gray-500);">业务关系图（供货厂/调货员 - 票源 - 户头 - 钢厂），仅展示当前生效的连接；节点下方灰字是挂在该节点上的费率。</div><div class="spacer"></div></div>
   <div id="rate-graph"></div>
 </div>
 <div class="card">
-  <div class="toolbar"><div class="spacer"></div><button class="btn-primary" id="btn-add-rate">+ 新增费率/关系</button></div>
+  <div class="toolbar">
+    <div style="font-size:13px;color:var(--gray-500);" id="rate-layout-hint">按钢厂 × 结算期查看；当前结算期默认展开，往期默认折叠。</div>
+    <div class="spacer"></div>
+    <button class="btn-sm" type="button" id="btn-open-period" hidden>开本期费率…</button>
+    <button class="btn-primary" id="btn-add-rate">+ 新增费率/关系</button>
+  </div>
   <div id="rate-form-box"></div>
   <div class="table-scroll"><table id="rate-table"></table></div>
 </div>
