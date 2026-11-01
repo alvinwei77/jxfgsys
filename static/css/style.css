@@ -607,9 +607,9 @@ a.drill:hover { color: var(--blue); border-bottom-color: var(--blue); }
 .nav-phone-only { display: none; }
 @media (max-width: 760px) {
   .topbar { flex-wrap: wrap; height: auto; padding: 8px 12px; gap: 6px; }
-  .topbar nav { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
-  .topbar nav::-webkit-scrollbar { display: none; }
-  .topbar nav a { white-space: nowrap; flex: 0 0 auto; }
+  .topbar .main-nav { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .topbar .main-nav::-webkit-scrollbar { display: none; }
+  .topbar .main-nav a, .topbar .nav-group-btn { white-space: nowrap; flex: 0 0 auto; }
   .nav-phone-only { display: inline-flex; font-weight: 600; color: var(--blue) !important; }
   .container { padding: 14px 12px 32px; }
   .page-header h1 { font-size: 17px; }
@@ -627,3 +627,62 @@ a.drill:hover { color: var(--blue); border-bottom-color: var(--blue); }
 .page-actions { display: flex; align-items: center; gap: 10px; }
 .page-actions:empty { display: none; }
 .page-actions .btn-link { font-size: 13px; color: var(--blue); text-decoration: none; }
+
+/* v2.4.8 导航分组 + 规则/档案二级导航 */
+.main-nav { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
+.nav-group { position: relative; }
+.nav-group-btn {
+  border: none; background: transparent; cursor: pointer; font: inherit; font-size: 13px;
+  padding: 6px 10px; border-radius: 6px; color: var(--gray-700);
+}
+.nav-group-active .nav-group-btn, .nav-group-btn:hover { background: var(--blue-light); color: var(--blue); }
+.nav-drop {
+  display: none; position: absolute; top: 100%; left: 0; min-width: 168px; z-index: 50;
+  background: #fff; border: 1px solid var(--gray-200); border-radius: 8px; padding: 6px 0;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+}
+.nav-group.open .nav-drop { display: block; }
+.nav-drop a {
+  display: block; padding: 8px 14px; font-size: 13px; color: var(--gray-800); text-decoration: none;
+}
+.nav-drop a:hover, .nav-drop a.active { background: var(--blue-light); color: var(--blue); }
+.nav-drop a.nav-optional { color: var(--gray-500); font-size: 12px; }
+
+.hub-subnav {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; padding-bottom: 10px;
+  border-bottom: 1px solid var(--gray-200);
+}
+.hub-subnav a {
+  padding: 6px 12px; border-radius: 6px; font-size: 13px; text-decoration: none;
+  color: var(--gray-700); background: var(--gray-100);
+}
+.hub-subnav a.active { background: var(--blue-light); color: var(--blue); font-weight: 600; }
+.hub-subnav a.nav-optional { opacity: 0.85; }
+
+.hub-period-bar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 14px;
+  padding: 10px 12px; background: #f8fafc; border-radius: 8px; font-size: 13px;
+}
+.hub-period-label { color: var(--gray-600); }
+.hub-period-meta { font-size: 12px; }
+
+.setup-hub-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px;
+}
+.setup-hub-card {
+  display: block; padding: 14px; border: 1px solid var(--gray-200); border-radius: 10px;
+  text-decoration: none; color: inherit; background: #fff;
+}
+.setup-hub-card:hover { border-color: var(--blue); background: var(--blue-light); }
+.setup-hub-card b { display: block; margin-bottom: 6px; }
+.setup-hub-card small { color: var(--gray-500); line-height: 1.45; }
+.setup-hub-muted { opacity: 0.92; }
+
+.stat-big { font-size: 28px; font-weight: 700; color: var(--gray-900); }
+.rh-tpl-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--gray-100); font-size: 13px; }
+
+.period-context-banner {
+  margin-bottom: 12px; padding: 10px 12px; background: #eff6ff; border-radius: 8px; font-size: 13px;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+}
+.profit-formula-details[open] summary { margin-bottom: 8px; }

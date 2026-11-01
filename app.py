@@ -30,6 +30,7 @@ import routes_reports  # noqa: F401
 import regression  # noqa: F401
 import mobile  # noqa: F401  手机录入 + 局域网访问把关
 import report_export  # noqa: F401  经营报告一键导出 PDF
+import routes_meta  # noqa: F401  结算期 / 规则 hub API
 
 if __name__ == "__main__":
     # 启动时自动备份 + 每日备份线程 + 清理过期回收站 + 利润核对（只在真正启动服务时跑，测试/脚本 import 不触发）

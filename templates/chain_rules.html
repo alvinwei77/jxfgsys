@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}链条规则{% endblock %}
 {% block content %}
+{% include 'includes/subnav_rules.html' %}
 <div class="card">
   <div class="toolbar">
     <div class="tabs-inline" id="cr-view-toggle">
@@ -22,5 +23,6 @@
 <div id="template-list" hidden></div>
 {% endblock %}
 {% block extra_scripts %}
+<script src="/static/js/rules_period.js"></script>
 <script src="/static/js/chain_rules.js"></script>
 {% endblock %}

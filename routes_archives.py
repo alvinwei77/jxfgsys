@@ -99,7 +99,7 @@ def rate_link_graph():
     """给"关系图"页面用：把 rate_links(当前生效的部分) + 几条已有的静态归属关系
     (户头所属钢厂、反向自然人绑定的钢厂/供货厂) 一起拼成 nodes+edges，
     同一份 rate_links 数据既驱动引擎计算(engine.py)也驱动这张图，不会两边不一致。"""
-    today = dt.date.today().isoformat()
+    as_of = (request.args.get("as_of") or dt.date.today().isoformat())[:10]
     nodes = {}
 
     def add_node(etype, row, name_field="name"):
@@ -131,7 +131,7 @@ def rate_link_graph():
     rate_rows = query(
         "SELECT * FROM rate_links WHERE effective_from<=? AND (effective_to IS NULL OR effective_to>=?) "
         "ORDER BY relation_type, primary_entity_id, secondary_entity_id, effective_from DESC",
-        (today, today),
+        (as_of, as_of),
     )
     catalog_by_code = {c["code"]: c for c in engine.RELATION_TYPE_CATALOG}
     seen_primary_secondary = set()  # 去重：同一primary+secondary+relation_type只取最新一条(SQL已按日期倒序)

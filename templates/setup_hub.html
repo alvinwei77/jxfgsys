@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}档案与系统{% endblock %}
+{% block content %}
+{% include 'includes/subnav_setup.html' %}
+<div class="note-banner">
+  日常<strong>很少改</strong>的内容放这里：主体档案、备份、审计、术语对照。录车价格以<strong>钢厂结算单</strong>为准时，<strong>报价单</strong>可忽略。
+</div>
+<div class="setup-hub-grid">
+  <a class="setup-hub-card" href="/archives">
+    <b>基础档案</b>
+    <small>钢厂、户头、票源、分期额度、调货人、车船司机、货型、量补阶梯</small>
+  </a>
+  <a class="setup-hub-card" href="/archives" title="票源额度分期 tab">
+    <b>本月票源 / 额度</b>
+    <small>快捷：档案里「票源额度分期」+「前端公司/反向自然人」</small>
+  </a>
+  <a class="setup-hub-card" href="/system?tab=backup">
+    <b>备份与恢复</b>
+    <small>收工后备份；误删走回收站</small>
+  </a>
+  <a class="setup-hub-card" href="/system?tab=verify">
+    <b>利润核对</b>
+    <small>改费率后确认哪些车利润变了</small>
+  </a>
+  <a class="setup-hub-card" href="/system?tab=settings">
+    <b>参数设置</b>
+    <small>预警天数、额度线、账龄分桶</small>
+  </a>
+  <a class="setup-hub-card" href="/glossary">
+    <b>术语速查</b>
+    <small>黑话 ↔ 系统叫法 ↔ 在哪个页</small>
+  </a>
+  <a class="setup-hub-card setup-hub-muted" href="/quotes">
+    <b>报价单</b>
+    <small>可选：按钢厂期号维护挂牌价（你方多数按结算单录）</small>
+  </a>
+</div>
+{% endblock %}

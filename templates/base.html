@@ -11,18 +11,32 @@
 <body>
 <div class="topbar">
   <div class="brand">废钢供应链 <span class="ver" id="app-ver" title="当前运行的版本">v{{ app_version }}</span></div>
-  <nav>
+  <nav class="main-nav">
     <a href="/m" class="nav-phone-only">手机录入</a>
-    <a href="/" class="{{ 'active' if active=='dashboard' }}">首页看板</a>
-    <a href="/trips" class="{{ 'active' if active=='trips' }}">车次管理</a>
-    <a href="/tracking" class="{{ 'active' if active=='tracking' }}">回款追踪</a>
-    <a href="/reports" class="{{ 'active' if active=='reports' }}">统计报表</a>
-    <a href="/quotes" class="{{ 'active' if active=='quotes' }}">报价单</a>
-    <a href="/archives" class="{{ 'active' if active=='archives' }}">基础档案</a>
-    <a href="/rate_links" class="{{ 'active' if active=='rate_links' }}">费率与关系</a>
-    <a href="/chain_rules" class="{{ 'active' if active=='chain_rules' }}">链条规则</a>
-    <a href="/glossary" class="{{ 'active' if active=='glossary' }}" title="黑话 ↔ 系统叫法 ↔ 在哪个页面；常见事情怎么做">术语速查</a>
-    <a href="/system" class="{{ 'active' if active=='system' }}">系统</a>
+    <a href="/" class="{{ 'active' if active=='dashboard' }}">首页</a>
+    <a href="/trips" class="{{ 'active' if active=='trips' }}">车次</a>
+    <a href="/tracking" class="{{ 'active' if active=='tracking' }}">回款</a>
+    <a href="/reports" class="{{ 'active' if active=='reports' }}">统计</a>
+
+    <div class="nav-group {{ 'nav-group-active' if active=='rules' }}">
+      <button type="button" class="nav-group-btn" aria-haspopup="true" aria-expanded="false">规则与算价 ▾</button>
+      <div class="nav-drop">
+        <a href="/rules" class="{{ 'active' if rules_sub|default('')=='hub' }}">本期总览</a>
+        <a href="/rate_links" class="{{ 'active' if rules_sub|default('')=='rates' }}">费率与关系</a>
+        <a href="/chain_rules" class="{{ 'active' if rules_sub|default('')=='chains' }}">链条规则</a>
+      </div>
+    </div>
+
+    <div class="nav-group {{ 'nav-group-active' if active=='setup' }}">
+      <button type="button" class="nav-group-btn" aria-haspopup="true" aria-expanded="false">档案与系统 ▾</button>
+      <div class="nav-drop">
+        <a href="/setup" class="{{ 'active' if setup_sub|default('')=='hub' }}">总览</a>
+        <a href="/archives" class="{{ 'active' if setup_sub|default('')=='archives' }}">基础档案</a>
+        <a href="/system" class="{{ 'active' if setup_sub|default('')=='system' }}">系统</a>
+        <a href="/glossary" class="{{ 'active' if setup_sub|default('')=='glossary' }}">术语速查</a>
+        <a href="/quotes" class="nav-optional {{ 'active' if setup_sub|default('')=='quotes' }}">报价单（少用）</a>
+      </div>
+    </div>
   </nav>
 </div>
 <div id="update-banner" class="update-banner" hidden></div>

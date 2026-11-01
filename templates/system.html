@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}系统{% endblock %}
 {% block content %}
+{% include 'includes/subnav_setup.html' %}
 <div class="tabs-inline" id="sys-tabs" style="margin-bottom:12px;">
   <button data-t="audit" class="active" onclick="sysTab('audit')">操作记录</button>
   <button data-t="recycle" onclick="sysTab('recycle')">回收站</button>

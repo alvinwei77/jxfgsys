@@ -2,6 +2,12 @@
 {% block title %}统计报表{% endblock %}
 {% block header_actions %}<button class="btn-primary" onclick="exportOpsReportXlsx(this)" title="导出分期与专题 Excel：①总览/各期明细/调货人工资/量补汇总/票源额度水位（缺省=全部期）">导出经营报告 Excel</button><button class="btn-primary" onclick="exportReportPdf(this)" title="生成给领导看的经营报告（手机阅读格式 PDF）">导出经营报告 PDF</button><a class="btn-link" href="/report" target="_blank">在线预览</a>{% endblock %}
 {% block content %}
+<div class="period-context-banner" id="reports-period-banner" hidden>
+  <span>默认已选 <strong class="period-label"></strong>（<span class="period-range"></span>，按结算日期）</span>
+  <a class="btn-link" href="/trips">去录/改车次 ›</a>
+  <button class="btn-sm" onclick="exportLedger()">导出台账 Excel</button>
+  <button class="btn-sm" onclick="resetQuery()">看全部历史</button>
+</div>
 <div class="toolbar">
   <select id="r-mill"><option value="">全部钢厂</option></select>
   <select id="r-cycle-period" style="min-width:260px;"><option value="">选择钢厂后可按其历史结算周期快速筛选</option></select>
@@ -134,5 +140,6 @@
 </div>
 {% endblock %}
 {% block extra_scripts %}
+<script src="/static/js/rules_period.js"></script>
 <script src="/static/js/reports.js"></script>
 {% endblock %}

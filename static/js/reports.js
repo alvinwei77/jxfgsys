@@ -18,7 +18,19 @@ async function initReports() {
   });
   document.getElementById('r-transport').addEventListener('change', runQuery);
   await loadCyclePeriods();
+  if (typeof applyDefaultSettlementPeriodFilter === 'function') {
+    await applyDefaultSettlementPeriodFilter('r-from', 'r-to');
+    const meta = await fetchSettlementPeriodMeta();
+    const banner = document.getElementById('reports-period-banner');
+    if (banner && meta) {
+      banner.hidden = false;
+      banner.querySelector('.period-label').textContent = meta.period_label;
+      banner.querySelector('.period-range').textContent = `${meta.period_start} ~ ${meta.period_end}`;
+    }
+  }
   await runQuery();
+  const pf = document.querySelector('#r-profit-formula details');
+  if (pf) pf.setAttribute('open', '');
 }
 
 async function loadCyclePeriods() {
@@ -44,6 +56,9 @@ function resetQuery() {
   document.getElementById('r-datefield').value = 'settlement_date';
   document.getElementById('r-from').value = '';
   document.getElementById('r-to').value = '';
+  history.replaceState(null, '', '/reports?period=all');
+  const banner = document.getElementById('reports-period-banner');
+  if (banner) banner.hidden = true;
   runQuery();
 }
 

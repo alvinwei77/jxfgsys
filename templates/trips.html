@@ -2,6 +2,7 @@
 {% block title %}车次管理{% endblock %}
 {% block content %}
 <div class="toolbar">
+  <span class="muted" id="trips-period-hint" style="flex:0 0 100%;font-size:12px;margin-bottom:4px;"></span>
   <select id="f-status"><option value="">全部状态</option>
     {% for code,label in status_list %}<option value="{{code}}">{{label}}</option>{% endfor %}
   </select>
@@ -56,6 +57,7 @@
 {% endblock %}
 
 {% block extra_scripts %}
-<script src="/static/js/trips.js"></script>
+<script src="/static/js/rules_period.js"></script>
 <script src="/static/js/import_settlement.js"></script>
+<script src="/static/js/trips.js"></script>
 {% endblock %}
