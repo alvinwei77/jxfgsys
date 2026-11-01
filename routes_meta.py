@@ -510,6 +510,23 @@ def api_rules_wizard_apply():
                 "规则向导·本期分期",
             )
             created += 1
+    rate_upserted = _apply_rate_wizard_rows(conn, period_start, rate_rows_in)
+    conn.commit()
+    return jsonify({"created": created, "updated": updated, "skipped": skipped, "rate_upserted": rate_upserted})
+
+
+def _flatten_rate_wizard_sections(sections):
+    out = []
+    for sec in sections or []:
+        for it in sec.get("items") or []:
+            out.append({**it, "section_key": sec.get("key"), "section_title": sec.get("title")})
+    return out
+
+
+def _apply_rate_wizard_rows(conn, period_start: str, rate_rows_in, note_style: str = "wizard"):
+    """批量 upsert 向导/开期继承勾选的费率行。返回写入条数。"""
+    tag = "开期继承" if note_style == "open_period" else "规则向导"
+    rate_upserted = 0
     for rr in rate_rows_in:
         if not rr.get("apply"):
             continue
@@ -521,6 +538,9 @@ def api_rules_wizard_apply():
         sec_id = rr.get("secondary_entity_id")
         if not sec_id:
             sec_type = None
+        note = rr.get("notes") or {
+            "account_advance_fee": f"{tag}·垫资费",
+        }.get(rr["relation_type"], f"{tag}·费率")
         new_id = engine.upsert_rate(
             conn,
             rr["relation_type"],
@@ -531,9 +551,7 @@ def api_rules_wizard_apply():
             rate_unit=rr.get("rate_unit") or "per_ton",
             secondary_entity_type=sec_type,
             secondary_entity_id=sec_id,
-            notes={
-                "account_advance_fee": "规则向导·垫资费",
-            }.get(rr["relation_type"], "规则向导·费率"),
+            notes=note,
         )
         audit(
             conn,
@@ -542,13 +560,84 @@ def api_rules_wizard_apply():
             "rate_value",
             rr.get("current_rate"),
             float(rv),
-            {
-                "account_advance_fee": "规则向导·垫资费",
-            }.get(rr["relation_type"], "规则向导·费率"),
+            note,
         )
         rate_upserted += 1
+    return rate_upserted
+
+
+@app.route("/api/rate_links/period_layout")
+def api_rate_links_period_layout():
+    """费率列表页：当前结算期 + 钢厂维度 + 是否提示开期。"""
+    as_of = (request.args.get("as_of") or dt.date.today().isoformat())[:10]
+    ps, pe = get_period_bounds(as_of)
+    ref = (dt.date.fromisoformat(ps) - dt.timedelta(days=1)).isoformat()
+    prev_ps, _prev_pe = get_period_bounds(ref)
+    mills = [{"id": 0, "name": "全局 / 跨厂"}] + [
+        {"id": m["id"], "name": m["name"]} for m in query("SELECT id, name FROM steel_mills ORDER BY name")
+    ]
+    account_mill = {int(r["id"]): r["mill_id"] for r in query("SELECT id, mill_id FROM accounts")}
+    cur_links = query(
+        "SELECT COUNT(*) AS c FROM rate_links WHERE date(effective_from)=date(?)", (ps,)
+    )[0]["c"]
+    ref_active = query(
+        """
+        SELECT COUNT(*) AS c FROM rate_links
+        WHERE date(effective_from)<=date(?) AND (effective_to IS NULL OR date(effective_to)>=date(?))
+        """,
+        (ref, ref),
+    )[0]["c"]
+    return {
+        "as_of": as_of,
+        "period_start": ps,
+        "period_end": pe,
+        "period_label": _period_label_cn(ps),
+        "prev_period_start": prev_ps,
+        "prev_period_label": _period_label_cn(prev_ps),
+        "mills": mills,
+        "account_mill": account_mill,
+        "current_period_link_count": cur_links,
+        "needs_open_period": cur_links == 0 and ref_active > 0,
+        "hint": "列表按「钢厂 × 结算期」折叠；仅当前结算期默认展开。票源分期仍到规则 hub 向导。",
+    }
+
+
+@app.route("/api/rate_links/open_period/sheet")
+def api_rate_links_open_period_sheet():
+    """新结算期：从上一日仍生效的费率组合生成可勾选继承清单。"""
+    as_of = (request.args.get("as_of") or dt.date.today().isoformat())[:10]
+    ps, pe = get_period_bounds(as_of)
+    ref = (dt.date.fromisoformat(ps) - dt.timedelta(days=1)).isoformat()
+    conn = get_db()
+    sections = _build_all_wizard_rate_sections(conn, ref, ps)
+    items = _flatten_rate_wizard_sections(sections)
+    for it in items:
+        it["effective_from"] = ps
+        it["apply_default"] = not it.get("existing_link_id")
+        if it.get("existing_link_id"):
+            it["apply_default"] = True
+    return {
+        "period_start": ps,
+        "period_end": pe,
+        "period_label": _period_label_cn(ps),
+        "prev_period_label": _period_label_cn(ref),
+        "ref_day": ref,
+        "sections": sections,
+        "items": items,
+    }
+
+
+@app.route("/api/rate_links/open_period/apply", methods=["POST"])
+def api_rate_links_open_period_apply():
+    """开期继承：把勾选的费率复制为 effective_from=本期起始 的新行（upsert 关旧开新）。"""
+    data = request.get_json(silent=True) or {}
+    period_start = (data.get("period_start") or "")[:10]
+    if not period_start:
+        return jsonify({"error": "缺少 period_start"}), 400
+    conn = get_db()
+    n = _apply_rate_wizard_rows(conn, period_start, data.get("items") or [], note_style="open_period")
     conn.commit()
-    return jsonify({"created": created, "updated": updated, "skipped": skipped, "rate_upserted": rate_upserted})
+    return jsonify({"ok": True, "rate_upserted": n})
 
 
 @app.route("/api/rules/mindmap")

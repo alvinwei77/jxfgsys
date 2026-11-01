@@ -4,6 +4,9 @@ let ARCH = {}; // processing_bases / dispatchers / invoice_sources / accounts / 
 let RATE_ROWS = [];
 let editingId = null;
 let RATE_FOCUS = null;
+let PERIOD_LAYOUT = null;
+let OPEN_PERIOD_SHEET = null;
+const MILL_OPEN = {};
 
 function parseRateFocusFromUrl() {
   const q = new URLSearchParams(location.search);
@@ -80,6 +83,41 @@ async function loadAll() {
   CATALOG = catalog;
   ARCH = { processing_bases: bases, dispatchers, invoice_sources: sources, accounts, steel_mills: mills };
   RATE_ROWS = rows;
+  await loadPeriodLayout();
+}
+
+async function loadPeriodLayout() {
+  const asOf = (typeof getRulesAsOf === 'function' && getRulesAsOf()) || todayStr();
+  PERIOD_LAYOUT = await apiGet('/api/rate_links/period_layout?as_of=' + encodeURIComponent(asOf));
+  const hint = document.getElementById('rate-layout-hint');
+  if (hint && PERIOD_LAYOUT.period_label) {
+    hint.textContent =
+      `当前维护 ${PERIOD_LAYOUT.period_label}（${PERIOD_LAYOUT.period_start} ~ ${PERIOD_LAYOUT.period_end}）· 按钢厂 × 结算期分组；往期默认折叠。`;
+  }
+  updateOpenPeriodBanner();
+}
+
+function millBucketForRow(r) {
+  if (!PERIOD_LAYOUT) return 0;
+  const am = PERIOD_LAYOUT.account_mill || {};
+  if (r.primary_entity_type === 'steel_mill' && r.primary_entity_id) return r.primary_entity_id;
+  if (r.primary_entity_type === 'account' && r.primary_entity_id) {
+    return am[r.primary_entity_id] || 0;
+  }
+  return 0;
+}
+
+function currentPeriodLabel() {
+  return PERIOD_LAYOUT ? PERIOD_LAYOUT.period_label : periodKeyOf(todayStr());
+}
+
+function sectionKey(millId, periodKey) {
+  return `M${millId}|P${periodKey}`;
+}
+
+function toggleMill(mid) {
+  MILL_OPEN[mid] = !MILL_OPEN[mid];
+  renderTable();
 }
 
 // ---------------- 关系图（分栏SVG，不依赖外部库） ----------------
@@ -203,6 +241,79 @@ function groupKeyOf(r) {
 function toggleSection(key) { SEC_OPEN[key] = !SEC_OPEN[key]; renderTable(); }
 function toggleGroup(key) { GRP_OPEN[key] = !GRP_OPEN[key]; renderTable(); }
 
+function renderTableBodyForRows(rows) {
+  const groups = new Map();
+  rows.forEach(r => {
+    const k = groupKeyOf(r);
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(r);
+  });
+  return [...groups.values()]
+    .sort((a, b) => a[0].relation_type.localeCompare(b[0].relation_type) ||
+                    (a[0].primary_entity_id || 0) - (b[0].primary_entity_id || 0) ||
+                    (a[0].secondary_entity_id || 0) - (b[0].secondary_entity_id || 0))
+    .map(g => groupHtml(g)).join('');
+}
+
+function renderTable() {
+  const table = document.getElementById('rate-table');
+  const curLabel = currentPeriodLabel();
+  const mills = PERIOD_LAYOUT?.mills || [{ id: 0, name: '全局 / 跨厂' }];
+
+  const byMill = new Map();
+  RATE_ROWS.forEach(r => {
+    const mid = millBucketForRow(r);
+    const pk = periodKeyOf(r.effective_from) || '未定';
+    if (!byMill.has(mid)) byMill.set(mid, new Map());
+    const pm = byMill.get(mid);
+    if (!pm.has(pk)) pm.set(pk, []);
+    pm.get(pk).push(r);
+  });
+
+  let body = '';
+  mills.forEach(m => {
+    const mid = m.id;
+    const periods = byMill.get(mid);
+    if (!periods || !periods.size) return;
+    if (MILL_OPEN[mid] === undefined) MILL_OPEN[mid] = true;
+    const total = [...periods.values()].reduce((n, arr) => n + arr.length, 0);
+    const millOpen = MILL_OPEN[mid];
+    body += `<tr class="rate-mill-row" onclick="toggleMill(${mid})">
+      <td colspan="8">
+        <span style="display:inline-block;width:14px;">${millOpen ? '▾' : '▸'}</span>
+        <strong>${esc(m.name)}</strong>
+        <span class="muted">（${total} 条）</span>
+      </td></tr>`;
+    if (!millOpen) return;
+    [...periods.keys()].sort((a, b) => b.localeCompare(a)).forEach(pk => {
+      const secKey = sectionKey(mid, pk);
+      const isCurrent = pk === curLabel;
+      if (SEC_OPEN[secKey] === undefined) SEC_OPEN[secKey] = isCurrent;
+      if (RATE_FOCUS && periods.get(pk).some(r => rowMatchesFocus(r, RATE_FOCUS))) SEC_OPEN[secKey] = true;
+      const open = SEC_OPEN[secKey];
+      const rows = periods.get(pk);
+      const periodTag = isCurrent
+        ? '<span class="tag-blue">当前结算期</span>'
+        : '<span class="tag-gray">已封账</span>';
+      body += `<tr class="rate-section-row" onclick="event.stopPropagation(); toggleSection('${secKey}')">
+        <td colspan="8">
+          <span style="display:inline-block;width:14px;margin-left:12px;">${open ? '▾' : '▸'}</span>
+          ${esc(pk)} · ${periodTag}
+          <span style="color:var(--gray-400);font-weight:400;">共 ${rows.length} 条${!isCurrent && !open ? ' · 已折叠' : ''}</span>
+        </td></tr>`;
+      if (open) body += renderTableBodyForRows(rows);
+    });
+  });
+
+  if (!body) body = `<tr><td colspan="8" class="empty-hint">暂无数据</td></tr>`;
+
+  table.innerHTML = `<thead><tr>
+      <th>费率/关系类型</th><th>对象</th><th>细分维度</th><th class="nowrap">费率</th>
+      <th class="nowrap">生效区间</th><th class="nowrap">属性</th><th>备注</th><th class="nowrap">操作</th>
+    </tr></thead><tbody>${body}</tbody>`;
+  updateRateFocusBanner();
+}
+
 function groupHtml(g) {
   const r0 = g[0];
   const cat = CATALOG.find(c => c.code === r0.relation_type);
@@ -254,64 +365,6 @@ function groupHtml(g) {
     }).join('');
   }
   return html;
-}
-
-function renderTable() {
-  const table = document.getElementById('rate-table');
-  const cur = periodKeyOf(todayStr());
-
-  // 1) 分桶：常驻 / 当期 / 未生效 / 往期(按失效期)
-  const buckets = new Map();
-  const add = (key, label, attr, folded, r) => {
-    if (!buckets.has(key)) buckets.set(key, { key, label, attr, folded, rows: [] });
-    buckets.get(key).rows.push(r);
-  };
-  RATE_ROWS.forEach(r => {
-    const a = attrOf(r);
-    if (a === '常驻') add('__perm__', '常驻（长期有效 · 无到期日）', '常驻', false, r);
-    else if (a === '未生效') { const pk = periodKeyOf(r.effective_from) || '未定'; add('F:' + pk, `${pk} 起（未生效）`, '未生效', false, r); }
-    else if (a === '往期') { const pk = periodKeyOf(r.effective_to) || '更早期'; add('P:' + pk, `${pk}（往期 · 已失效）`, '往期', true, r); }
-    else add('C:' + cur, `${cur}（当期）`, '当期', false, r);
-  });
-  const rank = b => b.key === '__perm__' ? 0 : b.key.startsWith('C:') ? 1 :
-                   b.key.startsWith('F:') ? 2 : 3;
-  const sections = [...buckets.values()].sort((a, b) =>
-    rank(a) - rank(b) || (rank(a) === 3 ? b.key.localeCompare(a.key) : a.key.localeCompare(b.key)));
-
-  let body = '';
-  if (!sections.length) body = `<tr><td colspan="8" class="empty-hint">暂无数据</td></tr>`;
-  sections.forEach(sec => {
-    if (SEC_OPEN[sec.key] === undefined) SEC_OPEN[sec.key] = !sec.folded;   // 往期默认收起
-    if (RATE_FOCUS && sec.rows.some(r => rowMatchesFocus(r, RATE_FOCUS))) SEC_OPEN[sec.key] = true;
-    const open = SEC_OPEN[sec.key];
-    body += `<tr class="rate-section-row" onclick="toggleSection('${sec.key}')">
-        <td colspan="8">
-          <span style="display:inline-block;width:14px;">${open ? '▾' : '▸'}</span>
-          ${esc(sec.label)}
-          <span class="tag-${ATTR_CLS[sec.attr]}">${sec.attr}</span>
-          <span style="color:var(--gray-400);font-weight:400;">共 ${sec.rows.length} 条${sec.folded && !open ? ' · 已折叠，点此行展开' : ''}</span>
-        </td>
-      </tr>`;
-    if (!open) return;
-    // 2) 同类合并（同一类型+对象+生效区间 → 1 行）
-    const groups = new Map();
-    sec.rows.forEach(r => {
-      const k = groupKeyOf(r);
-      if (!groups.has(k)) groups.set(k, []);
-      groups.get(k).push(r);
-    });
-    [...groups.values()]
-      .sort((a, b) => a[0].relation_type.localeCompare(b[0].relation_type) ||
-                      (a[0].primary_entity_id || 0) - (b[0].primary_entity_id || 0) ||
-                      (a[0].secondary_entity_id || 0) - (b[0].secondary_entity_id || 0))
-      .forEach(g => { body += groupHtml(g); });
-  });
-
-  table.innerHTML = `<thead><tr>
-      <th>费率/关系类型</th><th>对象</th><th>细分维度</th><th class="nowrap">费率</th>
-      <th class="nowrap">生效区间</th><th class="nowrap">属性</th><th>备注</th><th class="nowrap">操作</th>
-    </tr></thead><tbody>${body}</tbody>`;
-  updateRateFocusBanner();
 }
 
 function scrollToRateFocusRow() {
@@ -432,6 +485,7 @@ async function saveForm() {
   }
   RATE_ROWS = await apiGet('/api/rate_links');
   document.getElementById('rate-form-box').innerHTML = '';
+  await loadPeriodLayout();
   renderTable();
   renderGraph();
 }
@@ -446,13 +500,118 @@ function continueRow(id) {
 async function deleteRow(id) {
   if (!confirm('确认删除该条记录？')) return;
   await apiDelete(`/api/rate_links/${id}`);
+  await refreshRateData();
+}
+
+async function refreshRateData() {
   RATE_ROWS = await apiGet('/api/rate_links');
+  await loadPeriodLayout();
   renderTable();
   renderGraph();
 }
 
+function dismissOpenPeriodBanner() {
+  if (PERIOD_LAYOUT?.period_start) {
+    sessionStorage.setItem('rate_open_dismiss_' + PERIOD_LAYOUT.period_start, '1');
+  }
+  updateOpenPeriodBanner();
+}
+
+function updateOpenPeriodBanner() {
+  const box = document.getElementById('rate-open-period-box');
+  const btn = document.getElementById('btn-open-period');
+  if (!PERIOD_LAYOUT?.needs_open_period) {
+    if (box) { box.style.display = 'none'; box.innerHTML = ''; }
+    if (btn) btn.hidden = true;
+    return;
+  }
+  if (btn) btn.hidden = false;
+  if (!box) return;
+  const dismissed = PERIOD_LAYOUT.period_start &&
+    sessionStorage.getItem('rate_open_dismiss_' + PERIOD_LAYOUT.period_start);
+  if (dismissed) {
+    box.style.display = 'none';
+    return;
+  }
+  box.style.display = 'block';
+  box.innerHTML = `
+    <div class="panel-title-row">
+      <div class="panel-title">开 ${esc(PERIOD_LAYOUT.period_label)} 费率包</div>
+    </div>
+    <p class="muted" style="font-size:13px;margin:0 0 10px;">
+      本期还没有以 <b>${esc(PERIOD_LAYOUT.period_start)}</b> 起算的新费率行；可从
+      <b>${esc(PERIOD_LAYOUT.prev_period_label)}</b> 仍生效的组合里勾选继承（票源分期请到
+      <a href="/rules">规则 hub · 本期改价向导</a>）。
+    </p>
+    <button type="button" class="btn-primary" onclick="openOpenPeriodDialog()">选择要继承的费率…</button>
+    <button type="button" class="btn-sm" onclick="dismissOpenPeriodBanner()">稍后提醒</button>`;
+}
+
+async function openOpenPeriodDialog(force) {
+  const asOf = (typeof getRulesAsOf === 'function' && getRulesAsOf()) || todayStr();
+  OPEN_PERIOD_SHEET = await apiGet('/api/rate_links/open_period/sheet?as_of=' + encodeURIComponent(asOf));
+  const items = OPEN_PERIOD_SHEET.items || [];
+  if (!items.length) {
+    alert('没有可继承的费率组合（上一日无生效档位）。');
+    return;
+  }
+  const bySec = new Map();
+  items.forEach((it, idx) => {
+    const t = it.section_title || '费率';
+    if (!bySec.has(t)) bySec.set(t, []);
+    bySec.get(t).push({ ...it, _idx: idx });
+  });
+  let blocks = '';
+  bySec.forEach((list, title) => {
+    blocks += `<div class="panel-title" style="font-size:13px;margin:12px 0 6px;">${esc(title)}</div>
+      <div class="rate-checklist">${list.map(it => {
+        const chk = it.apply_default ? 'checked' : '';
+        return `<label class="rate-checklist-item"><input type="checkbox" class="op-inherit-cb" data-idx="${it._idx}" ${chk}>
+          ${esc(it.label)} · 当前 ${fmtNum(it.current_rate, 2)}</label>`;
+      }).join('')}</div>`;
+  });
+  document.getElementById('rate-form-box').innerHTML = `
+    <div class="card" style="background:#fff;border-color:var(--gray-200);margin-bottom:12px;">
+      <div class="panel-title">继承到 ${esc(OPEN_PERIOD_SHEET.period_label)}（自 ${esc(OPEN_PERIOD_SHEET.period_start)} 起）</div>
+      ${blocks}
+      <div class="toolbar" style="margin-top:12px;">
+        <button class="btn-primary" onclick="applyOpenPeriodInherit()">确认写入勾选项</button>
+        <button onclick="document.getElementById('rate-form-box').innerHTML=''">取消</button>
+      </div>
+    </div>`;
+  if (force) document.getElementById('rate-form-box').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function applyOpenPeriodInherit() {
+  if (!OPEN_PERIOD_SHEET) return;
+  const picked = [];
+  document.querySelectorAll('.op-inherit-cb').forEach(cb => {
+    const idx = +cb.dataset.idx;
+    const it = { ...OPEN_PERIOD_SHEET.items[idx], apply: cb.checked };
+    picked.push(it);
+  });
+  const n = picked.filter(x => x.apply).length;
+  if (!n) { alert('请至少勾选一条'); return; }
+  if (!confirm(`确认继承 ${n} 条费率到 ${OPEN_PERIOD_SHEET.period_start} 起？`)) return;
+  await apiPost('/api/rate_links/open_period/apply', {
+    period_start: OPEN_PERIOD_SHEET.period_start,
+    items: picked,
+  });
+  toast(`已写入 ${n} 条`);
+  document.getElementById('rate-form-box').innerHTML = '';
+  if (PERIOD_LAYOUT?.period_start) {
+    sessionStorage.removeItem('rate_open_dismiss_' + PERIOD_LAYOUT.period_start);
+  }
+  await refreshRateData();
+}
+
 document.getElementById('btn-add-rate').addEventListener('click', () => showForm(null));
+document.getElementById('btn-open-period')?.addEventListener('click', () => openOpenPeriodDialog(true));
 
 RATE_FOCUS = parseRateFocusFromUrl();
 loadAll().then(() => { renderTable(); scrollToRateFocusRow(); renderGraph(); });
-document.addEventListener('rules-as-of-changed', () => renderGraph());
+document.addEventListener('rules-as-of-changed', async () => {
+  await loadPeriodLayout();
+  renderTable();
+  renderGraph();
+});
