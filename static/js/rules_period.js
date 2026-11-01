@@ -64,7 +64,9 @@ async function applyDefaultSettlementPeriodFilter(fromSel, toSel, opts = {}) {
   if (fromEl.value && toEl.value && !opts.force) return null;
   if (q.get('period') !== 'current' && fromEl.value && !opts.force) return null;
   const meta = await fetchSettlementPeriodMeta();
-  fromEl.value = meta.period_start;
-  toEl.value = meta.period_end;
+  const fs = meta.suggested_filter_start || meta.period_start;
+  const fe = meta.suggested_filter_end || meta.period_end;
+  fromEl.value = fs;
+  toEl.value = fe;
   return meta;
 }
