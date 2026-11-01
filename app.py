@@ -18,6 +18,7 @@ v2.0.1 起主程序拆成几个文件（原来一个 app.py 近三千行）：
 启动：python3 app.py（或双击「启动系统.command」）。旧脚本里的 `import app; app.app` 照常可用。
 """
 import os
+import sys
 
 from core import *  # noqa: F401,F403  —— 保持 `import app as A; A._compute_finance` 这类旧用法可用
 from core import app, system_ops, APP_VERSION
@@ -37,13 +38,35 @@ if __name__ == "__main__":
     if os.environ.get("WERKZEUG_RUN_MAIN") != "true":
         system_ops.start_background()
         regression.startup_check(system_ops._db_path())
-    port = int(os.environ.get("PORT", 5000))
+    # macOS「隔空播放接收器」(AirTunes) 会占用 *:5000，curl 会看到 Server: AirTunes/… 403，不是本系统。
+    # 故 Mac 默认 5001；其它系统仍 5000。可设 PORT= 覆盖。
+    _default_port = 5001 if sys.platform == "darwin" else 5000
+    port = int(os.environ.get("PORT", _default_port))
     debug = os.environ.get("DEBUG", "0") == "1"
-    # 电脑本机仍然只用 127.0.0.1:5000（和以前一模一样）。
-    # 手机另开一个局域网端口(默认 5080)：不能直接让 5000 监听所有网卡——macOS 的"隔空播放接收器"
-    # (AirPlay Receiver) 占着所有网卡的 5000 端口，一撞就"端口被占用"起不来（v2.1.0 的 bug）。
-    # 不想让手机连：启动前设 SCRAPMETAL_HOST=127.0.0.1
+    # 电脑本机监听 127.0.0.1；手机另开局域网端口(默认 5080)。不想让手机连：SCRAPMETAL_HOST=127.0.0.1
     print(f"=== 废钢供应链系统 v{APP_VERSION} · 电脑打开 http://127.0.0.1:{port} ===", flush=True)
+    if sys.platform == "darwin" and port == 5000:
+        print(
+            "    [提示] Mac 上 5000 常被「隔空播放接收器」占用；未设 PORT 时默认已用 5001。"
+            " 若你强制 PORT=5000，请先关闭系统设置里的隔空播放接收器。",
+            flush=True,
+        )
+    elif port == 5000:
+        print(
+            f"    若浏览器提示「Access to 127.0.0.1 was denied」且 curl 显示 Server: AirTunes："
+            f" 那是 Mac 隔空播放占用了 5000，请 PORT=5001 python3 app.py",
+            flush=True,
+        )
     if os.environ.get("SCRAPMETAL_HOST", "0.0.0.0") != "127.0.0.1" and not debug:
         mobile.start_lan_server(app, int(os.environ.get("MOBILE_PORT", 5080)))
-    app.run(host="127.0.0.1", port=port, debug=debug)
+    try:
+        app.run(host="127.0.0.1", port=port, debug=debug)
+    except OSError as e:
+        if getattr(e, "errno", None) in (98, 48, 10048):  # Linux/macOS/Windows: address already in use
+            print(
+                f"\n[错误] 端口 {port} 已被占用（macOS 上常见：系统「隔空播放接收器」占 5000）。\n"
+                f"  解决：系统设置 → 通用 → AirDrop 与隔空播放 → 关闭「隔空播放接收器」；\n"
+                f"  或换端口启动：PORT=5001 python3 app.py ，浏览器打开 http://127.0.0.1:5001\n",
+                flush=True,
+            )
+        raise

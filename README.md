@@ -26,9 +26,34 @@ python imports/import_data.py "/path/to/8.19付款明细-欧冶物宝1.xlsx"
 python app.py
 ```
 
-启动后浏览器访问 `http://127.0.0.1:5000` 即可使用。数据全部保存在 `data/scrapmetal.db` 这一个文件里，**建议定期复制这个文件做备份**（比如每天收工后复制一份改名加日期）。
+启动后浏览器访问 **`http://127.0.0.1:5001`**（Mac 默认，因系统「隔空播放」占 5000）或 **`http://127.0.0.1:5000`**（Windows/Linux 默认）。也可执行 `python3 app.py` 看终端里打印的实际地址。数据全部保存在 `data/scrapmetal.db` 这一个文件里，**建议定期复制这个文件做备份**（比如每天收工后复制一份改名加日期）。
 
 停止服务：回到运行 `python app.py` 的终端窗口，按 `Ctrl+C`。
+
+### 浏览器显示「Access to 127.0.0.1 was denied」（HTTP 403）
+
+常见两种原因：
+
+**A. `curl -I http://127.0.0.1:5000/` 里出现 `Server: AirTunes` 或 `403 Forbidden`（Content-Length: 0）**
+
+这是 **macOS「隔空播放接收器」占了 5000 端口**，不是你的 Flask。任选其一：
+
+- **推荐**：`PORT=5001 python3 app.py`（v2.6.1 起 Mac 未设 `PORT` 时默认就是 **5001**），浏览器打开终端里打印的地址。
+- 或：系统设置 → 通用 → AirDrop 与隔空播放 → **关闭「隔空播放接收器」**，再用 5000。
+
+自检：`curl -I http://127.0.0.1:5001/` 应看到 `Server: Werkzeug/…` 和 `HTTP/1.1 200 OK`。
+
+**B. curl 已是 200，但浏览器仍 403**
+
+多为浏览器缓存（Brave/Chrome 常见）→ Safari/无痕窗口，或 **http://localhost:端口** ；勿用 https。详见下方步骤。
+
+1. **确认服务真在跑**：终端里应看到 `=== 废钢供应链系统 v2.x · 电脑打开 http://127.0.0.1:xxxx ===`，且窗口不要关。
+2. **用命令行测**：
+   ```bash
+   curl -I http://127.0.0.1:5001/
+   ```
+   （Mac 用 5001；其它系统把端口改成终端里打印的或 5000。）
+3. **不要用 Cursor/VS Code 内置预览**：用 Chrome/Safari 打开终端里的地址。
 
 ## 二、已实现的功能
 
