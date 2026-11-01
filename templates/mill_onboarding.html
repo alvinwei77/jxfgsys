@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}新钢厂上线{% endblock %}
+{% block content %}
+{% include 'includes/subnav_setup.html' %}
+<div class="note-banner">
+  只读扫描当前库，帮你核对<strong>新钢厂或新链条</strong>上线前档案是否齐、该去哪改费率与计算口径。不会自动改数据。
+</div>
+<div id="mo-tips" class="card" hidden></div>
+<div class="card">
+  <div class="panel-title">推荐步骤</div>
+  <ol id="mo-playbook" class="mo-playbook"></ol>
+</div>
+<div class="card">
+  <div class="panel-title">钢厂档案</div>
+  <div class="table-scroll"><table id="mo-mills">
+    <thead><tr><th>钢厂</th><th>量补阶梯</th><th>周期日</th><th>户头</th><th>有效车次</th><th>已结算+</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+</div>
+<div class="card">
+  <div class="panel-title">链条规则（模板）</div>
+  <div class="table-scroll"><table id="mo-templates">
+    <thead><tr><th>规则</th><th>代码</th><th>状态</th><th>在用车次</th><th>操作</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script src="/static/js/mill_onboarding.js"></script>
+{% endblock %}

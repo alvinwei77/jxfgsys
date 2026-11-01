@@ -22,6 +22,11 @@ def page_setup_hub():
     return render_template("setup_hub.html", active="setup", setup_sub="hub")
 
 
+@app.route("/setup/mill-onboarding")
+def page_mill_onboarding():
+    return render_template("mill_onboarding.html", active="setup", setup_sub="onboarding")
+
+
 @app.route("/trips")
 def page_trips():
     return render_template("trips.html", status_list=STATUS_LIST, active="trips")

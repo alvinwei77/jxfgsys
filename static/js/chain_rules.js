@@ -15,6 +15,8 @@
 
 let TEMPLATES = [];
 const PATH_STATE = {}; // template_id -> 'all'/'invoice'/'payment'，记住每张图当前选的是哪条路径视图
+const CR_TEMPLATE_TAB = {}; // template_id -> graph|edges|calc|display
+const CR_TAB_LABELS = { graph: '关系图', edges: '流程环节', calc: '计算口径', display: '展示字段' };
 
 // 用户录进来的名称/备注是自由文本，可能带引号或尖括号，塞进 value="..." 前必须转义，
 // 否则一个双引号就能把整行表格结构撑坏。
@@ -41,7 +43,9 @@ function restoreScroll(y) {
 async function loadAll() {
   await loadHopTypes();   // 环节类型目录由后端 engine.HOP_TYPE_CATALOG 定义，下拉框和配色都用它
   TEMPLATES = await apiGet('/api/flow_templates');
-  applyCrView();
+  const dl = parseChainRulesDeepLink();
+  if (dl.templateCode || dl.tab || dl.nodeKey) CR_VIEW = 'edit';
+  await applyCrView();
 }
 
 // ---------------- 只读「一眼看懂」视图（B档 2026-10-09）----------------
@@ -54,9 +58,9 @@ let CARDS_BUILT = false;
 
 function setCrView(v) {
   CR_VIEW = v;
-  applyCrView();
+  applyCrView().catch(err => console.error(err));
 }
-function applyCrView() {
+async function applyCrView() {
   const isPlain = CR_VIEW === 'plain';
   document.querySelectorAll('#cr-view-toggle button').forEach(b => b.classList.toggle('active', b.dataset.v === CR_VIEW));
   const plain = document.getElementById('cr-plain');
@@ -70,9 +74,12 @@ function applyCrView() {
   if (intro) intro.hidden = isPlain;
   if (hint) hint.innerHTML = isPlain
     ? '每条链条规则用一句人话 + 一条流程线讲清楚：货走哪些主体、我们赚哪一段钱。<b>要改就去右上角「编辑」。</b>'
-    : '编辑视图：改名称/说明、流程环节、计算口径。改口径只影响以后新算的钱——已经「固化」过的历史车次数字不变。';
+    : '编辑视图：用卡片内标签切换「关系图 / 流程环节 / 计算口径 / 展示字段」。改口径只影响以后新算的钱——已固化历史车次不变。';
   if (isPlain) renderPlainList();
-  else if (!CARDS_BUILT) renderTemplateList();
+  else {
+    if (!CARDS_BUILT) await renderTemplateList();
+    await applyChainRulesDeepLink();
+  }
 }
 
 const PLAIN_MODEL = {
@@ -135,9 +142,59 @@ function renderTemplateList() {
     card.className = 'card';
     card.id = `tpl-card-${t.id}`;
     box.appendChild(card);
-    renderTemplateCard(t.id);
   });
   CARDS_BUILT = true;
+  return Promise.all(TEMPLATES.map(t => renderTemplateCard(t.id)));
+}
+
+function switchTemplateTab(tid, tab) {
+  if (!CR_TAB_LABELS[tab]) tab = 'graph';
+  CR_TEMPLATE_TAB[tid] = tab;
+  const card = document.getElementById(`tpl-card-${tid}`);
+  if (!card) return;
+  card.querySelectorAll('.cr-template-tabs button[data-tab]').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === tab);
+  });
+  ['graph', 'edges', 'calc', 'display'].forEach(p => {
+    const el = document.getElementById(`tpl-panel-${p}-${tid}`);
+    if (el) el.hidden = p !== tab;
+  });
+}
+
+function parseChainRulesDeepLink() {
+  const q = new URLSearchParams(location.search);
+  return {
+    templateCode: (q.get('template') || '').trim(),
+    tab: (q.get('tab') || '').trim(),
+    nodeKey: (q.get('node') || '').trim(),
+  };
+}
+
+async function applyChainRulesDeepLink() {
+  const { templateCode, tab, nodeKey } = parseChainRulesDeepLink();
+  if (!templateCode && !tab && !nodeKey) return;
+  if (templateCode) {
+    const t = TEMPLATES.find(x => x.code === templateCode || x.short_name === templateCode);
+    if (!t) return;
+    if (tab && CR_TAB_LABELS[tab]) CR_TEMPLATE_TAB[t.id] = tab;
+    switchTemplateTab(t.id, CR_TEMPLATE_TAB[t.id] || 'graph');
+    const card = document.getElementById(`tpl-card-${t.id}`);
+    if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (nodeKey && (CR_TEMPLATE_TAB[t.id] || tab) === 'calc') {
+      await flashNodeByKey(t.id, nodeKey);
+    }
+  } else if (tab && CR_TAB_LABELS[tab]) {
+    TEMPLATES.forEach(t => switchTemplateTab(t.id, tab));
+  }
+}
+
+function flashNodeByKey(tid, nodeKey) {
+  const d = FORMULA[tid];
+  if (!d) return Promise.resolve();
+  const n = d.nodes.find(x => x.node_key === nodeKey);
+  if (!n) return Promise.resolve();
+  flashNode(tid, n.n);
+  return Promise.resolve();
 }
 
 // 整张卡片重建：只在首次加载、以及新建链条规则之后调用。日常编辑一律走下面的局部刷新。
@@ -146,6 +203,7 @@ async function renderTemplateCard(tid) {
   if (!card) return;
   const t = TEMPLATES.find(x => x.id === tid);
   const path = PATH_STATE[tid] || 'all';
+  const activeTab = CR_TEMPLATE_TAB[tid] || 'graph';
   card.innerHTML = `
     <div class="toolbar">
       <div>
@@ -161,35 +219,43 @@ async function renderTemplateCard(tid) {
         <input type="checkbox" ${t.is_active ? 'checked' : ''} onchange="toggleActive(${tid}, this.checked)"> 启用
       </label>
       <button class="btn-sm" onclick="editTemplateMeta(${tid})">编辑名称/说明</button>
+      <button class="btn-sm" onclick="cloneTemplate(${tid})" title="复制计算节点与流程环节，默认停用">复制为新规则</button>
     </div>
     <div style="font-size:12.5px;color:var(--gray-500);margin:2px 0 8px;" id="tpl-desc-${tid}">${attr(t.description || '')}</div>
     <div id="tpl-meta-form-${tid}"></div>
-    <div class="toolbar" style="margin-bottom:4px;" id="tpl-path-btns-${tid}">
-      <div style="font-size:12px;color:var(--gray-500);">关系图视图：</div>
-      ${['all', 'invoice', 'payment'].map(p => `
-        <button class="btn-sm ${path === p ? 'btn-primary' : ''}" data-path="${p}" onclick="switchPath(${tid}, '${p}')">
-          ${p === 'all' ? '全部' : p === 'invoice' ? '票据路径(结算单/台账/发票)' : '财务路径(打款)'}
-        </button>`).join('')}
+    <div class="cr-template-tabs tabs-inline" id="tpl-tabs-${tid}">
+      ${Object.entries(CR_TAB_LABELS).map(([k, lab]) =>
+        `<button type="button" data-tab="${k}" class="${activeTab === k ? 'active' : ''}" onclick="switchTemplateTab(${tid}, '${k}')">${lab}</button>`
+      ).join('')}
     </div>
-    <div id="tpl-banner-${tid}"></div>
-    <div id="tpl-graph-${tid}" class="chart-card"></div>
-    <details style="margin-top:10px;">
-      <summary style="cursor:pointer;font-size:13px;color:var(--gray-600);">流程环节列表（可编辑，只影响关系图，不影响计算公式）</summary>
-      <div id="tpl-edges-${tid}" style="margin-top:8px;"></div>
-    </details>
-    <details style="margin-top:6px;" class="formula-details">
-      <summary style="cursor:pointer;font-size:13px;color:var(--gray-700);font-weight:600;">计算公式：这条规则的钱是怎么算的（可改费率来源、净利润加减项）</summary>
-      <div id="tpl-formula-${tid}" style="margin-top:8px;"></div>
-      <details style="margin-top:8px;">
-        <summary style="cursor:pointer;font-size:12px;color:var(--gray-500);">高级：节点在关系图里的角色 / 单据类型</summary>
-        <div id="tpl-nodes-${tid}" style="margin-top:8px;"></div>
-      </details>
-    </details>
+    <div id="tpl-panel-graph-${tid}" ${activeTab === 'graph' ? '' : 'hidden'}>
+      <div class="toolbar" style="margin:8px 0 4px;" id="tpl-path-btns-${tid}">
+        <div style="font-size:12px;color:var(--gray-500);">关系图视图：</div>
+        ${['all', 'invoice', 'payment'].map(p => `
+          <button class="btn-sm ${path === p ? 'btn-primary' : ''}" data-path="${p}" onclick="switchPath(${tid}, '${p}')">
+            ${p === 'all' ? '全部' : p === 'invoice' ? '票据路径(结算单/台账/发票)' : '财务路径(打款)'}
+          </button>`).join('')}
+      </div>
+      <div id="tpl-banner-${tid}"></div>
+      <div id="tpl-graph-${tid}" class="chart-card"></div>
+    </div>
+    <div id="tpl-panel-edges-${tid}" style="margin-top:8px;" ${activeTab === 'edges' ? '' : 'hidden'}>
+      <div class="muted" style="font-size:12px;margin-bottom:6px;">只影响关系图怎么画，不改变计算公式本身。</div>
+      <div id="tpl-edges-${tid}"></div>
+    </div>
+    <div id="tpl-panel-calc-${tid}" style="margin-top:8px;" ${activeTab === 'calc' ? '' : 'hidden'}>
+      <div id="tpl-formula-${tid}"></div>
+    </div>
+    <div id="tpl-panel-display-${tid}" style="margin-top:8px;" ${activeTab === 'display' ? '' : 'hidden'}>
+      <div class="muted" style="font-size:12px;margin-bottom:6px;">节点在关系图里的角色、名称与单据类型（不改公式结构）。</div>
+      <div id="tpl-nodes-${tid}"></div>
+    </div>
   `;
   await refreshGraph(tid);
   renderEdgesEditor(tid);
   renderNodesEditor(tid);
   renderFormula(tid);
+  switchTemplateTab(tid, activeTab);
 }
 
 // 只重画关系图。拉数据期间先把容器高度锁住，等新图画好再放开——否则容器会先塌成0高度，
@@ -300,7 +366,28 @@ async function saveNewTemplate() {
   const short_name = document.getElementById('nt-short').value.trim();
   await apiPost('/api/flow_templates', { code, name, short_name, calc_family, description });
   document.getElementById('new-template-box').innerHTML = '';
+  CARDS_BUILT = false;
   await loadAll();
+}
+async function cloneTemplate(tid) {
+  const t = TEMPLATES.find(x => x.id === tid);
+  if (!t) return;
+  const newCode = prompt(`复制「${t.name}」— 新规则英文代码（唯一）`, `${t.code}_copy`);
+  if (!newCode || !newCode.trim()) return;
+  const newName = prompt('展示名', `${t.name}（副本）`);
+  if (!newName || !newName.trim()) return;
+  try {
+    const r = await apiPost(`/api/flow_templates/${tid}/clone`, { code: newCode.trim(), name: newName.trim() });
+    toast(`已复制为 ${r.code}（默认停用，核对后再启用）`);
+    CARDS_BUILT = false;
+    CR_TEMPLATE_TAB[r.id] = 'calc';
+    await loadAll();
+    location.hash = '';
+    history.replaceState(null, '', `/chain_rules?template=${encodeURIComponent(r.code)}&tab=calc`);
+    await applyChainRulesDeepLink();
+  } catch (e) {
+    alert(e.message || String(e));
+  }
 }
 document.getElementById('btn-add-template').addEventListener('click', showNewTemplateForm);
 
@@ -588,9 +675,6 @@ async function saveNode(nodeId, btn) {
   flashSaved(btn);
 }
 
-loadAll();
-
-
 // ---------------- 计算公式"读得懂版"（2026-09-21） ----------------
 // 每个节点一行：①编号 名称 = 中文公式（引用别的节点用编号小标签）；右边是用这条规则最近一车代入的真实数字，
 // 以及费率从哪来、去哪改。能改的只有两类：费率节点"费率从哪来"、净利润"加减哪些项"，都先预览影响再保存。
@@ -726,3 +810,5 @@ async function undoRule(tid, id) {
   await apiPost(`/api/template_nodes/${id}/rule`, { ...body, confirm: true });
   toast('已撤销'); renderFormula(tid);
 }
+
+loadAll();
