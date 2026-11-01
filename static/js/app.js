@@ -651,8 +651,35 @@ async function exportReportPdf(btn) {
   finally { if (btn) { btn.disabled = false; btn.textContent = old; } }
 }
 
-function exportLedger() {
-  window.location.href = '/api/export/ledger';
+function exportLedger(queryParams) {
+  let qs = "";
+  if (queryParams instanceof URLSearchParams) {
+    qs = queryParams.toString();
+  } else if (typeof queryParams === "string") {
+    qs = queryParams.replace(/^\?/, "");
+  } else {
+    const p = new URLSearchParams();
+    const fromEl = document.getElementById("f-from") || document.getElementById("r-from");
+    const toEl = document.getElementById("f-to") || document.getElementById("r-to");
+    const fieldEl = document.getElementById("r-datefield");
+    if (fromEl?.value) p.set("date_from", fromEl.value);
+    if (toEl?.value) p.set("date_to", toEl.value);
+    if (fromEl?.value || toEl?.value) {
+      p.set("date_field", fieldEl?.value || "settlement_date");
+    }
+    qs = p.toString();
+  }
+  window.location.href = "/api/export/ledger" + (qs ? "?" + qs : "");
+}
+
+function exportLedgerFromReports() {
+  if (typeof LAST_PARAMS !== "undefined" && LAST_PARAMS && LAST_PARAMS.toString()) {
+    const p = new URLSearchParams(LAST_PARAMS);
+    if (!p.has("date_field")) p.set("date_field", "settlement_date");
+    exportLedger(p);
+  } else {
+    exportLedger();
+  }
 }
 
 function initMainNavDropdowns() {

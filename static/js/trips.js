@@ -390,11 +390,8 @@ function exportCsv() {
   a.click();
 }
 
-function exportLedger() {
-  // 直接用浏览器原生下载（后端返回带 Content-Disposition 的文件流），
-  // 不走 apiGet（那个走 fetch+JSON，不适合下载二进制文件）。
-  window.location.href = '/api/export/ledger';
-}
+
+// 导出台账：见 app.js exportLedger()（会读 f-from / f-to 筛选）
 
 // 新建：钢厂/户头/接单日期/发货地由后端按录入默认值补齐(/api/entry_defaults)，打开后光标直接在车牌框
 async function createTrip() {
