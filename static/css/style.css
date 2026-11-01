@@ -693,3 +693,30 @@ a.drill:hover { color: var(--blue); border-bottom-color: var(--blue); }
 .mindmap-svg .mm-edge-rate:hover path { stroke-width: 2.2; }
 tr.rate-row-highlight { background: #eff6ff; box-shadow: inset 3px 0 0 var(--blue); }
 tr.rate-row-highlight td { background: inherit; }
+
+/* 统计 · 日历格 */
+.cal-nav { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+.cal-nav-title { font-weight: 600; font-size: 15px; min-width: 120px; text-align: center; }
+.cal-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 4px; }
+.cal-weekdays span { text-align: center; font-size: 11px; color: var(--gray-500); font-weight: 600; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.cal-cell { min-height: 72px; border: 1px solid var(--gray-200); border-radius: 8px; padding: 6px 8px;
+  background: #fff; font-size: 12px; transition: box-shadow .12s, border-color .12s; }
+.cal-cell:hover:not(.cal-pad):not(.cal-out) { border-color: var(--blue); box-shadow: 0 2px 8px rgba(37,99,235,.12); }
+.cal-cell.cal-pad { border: none; background: transparent; min-height: 0; }
+.cal-cell.cal-out { background: var(--gray-50); opacity: .72; }
+.cal-cell.cal-empty { background: #fafafa; }
+.cal-cell .cal-day { font-size: 11px; color: var(--gray-500); margin-bottom: 4px; }
+.cal-cell .cal-val { font-size: 15px; font-weight: 600; line-height: 1.2; color: var(--gray-800); }
+.cal-cell .cal-sub { font-size: 10px; color: var(--gray-400); margin-top: 2px; }
+.cal-cell a.cal-link { display: block; color: inherit; text-decoration: none; height: 100%; }
+.cal-cell.cal-heat-1 { background: #eff6ff; }
+.cal-cell.cal-heat-2 { background: #dbeafe; }
+.cal-cell.cal-heat-3 { background: #bfdbfe; }
+.cal-cell.cal-heat-4 { background: #93c5fd; }
+.cal-cell.cal-heat-4 .cal-val { color: #1e3a8a; }
+.cal-footer { font-size: 12px; margin-top: 10px; }
+@media (max-width: 640px) {
+  .cal-cell { min-height: 58px; padding: 4px 5px; }
+  .cal-cell .cal-val { font-size: 13px; }
+}

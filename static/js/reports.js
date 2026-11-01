@@ -28,6 +28,8 @@ async function initReports() {
       banner.querySelector('.period-range').textContent = `${meta.period_start} ~ ${meta.period_end}`;
     }
   }
+  CAL_YEAR = null;
+  CAL_MONTH = null;
   await runQuery();
   const pf = document.querySelector('#r-profit-formula details');
   if (pf) pf.setAttribute('open', '');
@@ -89,6 +91,114 @@ async function runQuery() {
   renderPathCards(data.by_transport, 'r-transport-cards', [{ transport_type: 'truck' }, { transport_type: 'ship' }]);
   LAST_PARAMS = params;
   loadTrend(); loadQuality(); loadCompleteness();
+  loadCalendar();
+}
+
+// ---------------- 日历格（按月热力 + 下钻） ----------------
+let CAL_YEAR = null, CAL_MONTH = null, CAL_METRIC = 'tonnage', CAL_DATA = null;
+
+function setCalendarMetric(m) {
+  CAL_METRIC = m;
+  document.querySelectorAll('#r-cal-metric-tabs button').forEach(b =>
+    b.classList.toggle('active', b.dataset.m === m));
+  if (CAL_DATA) renderCalendarGrid(CAL_DATA);
+}
+
+function calendarMonthFromFilter() {
+  const from = document.getElementById('r-from')?.value;
+  if (from) {
+    const d = new Date(from + 'T00:00:00');
+    return { year: d.getFullYear(), month: d.getMonth() + 1 };
+  }
+  const t = new Date();
+  return { year: t.getFullYear(), month: t.getMonth() + 1 };
+}
+
+function resetCalendarMonth() {
+  const { year, month } = calendarMonthFromFilter();
+  CAL_YEAR = year;
+  CAL_MONTH = month;
+  loadCalendar();
+}
+
+function shiftCalendarMonth(delta) {
+  if (CAL_YEAR == null) resetCalendarMonth();
+  CAL_MONTH += delta;
+  if (CAL_MONTH > 12) { CAL_MONTH = 1; CAL_YEAR += 1; }
+  if (CAL_MONTH < 1) { CAL_MONTH = 12; CAL_YEAR -= 1; }
+  loadCalendar();
+}
+
+function calendarMetricValue(cell) {
+  if (CAL_METRIC === 'profit') return cell.profit || 0;
+  if (CAL_METRIC === 'trip_count') return cell.trip_count || 0;
+  return cell.tonnage || 0;
+}
+
+function formatCalendarMetric(v) {
+  if (CAL_METRIC === 'profit') return '¥' + fmtNum(v, 0);
+  if (CAL_METRIC === 'trip_count') return String(v || 0) + ' 车';
+  return fmtNum(v, 1) + ' 吨';
+}
+
+function calendarCellSub(cell) {
+  if (!cell.trip_count) return '—';
+  return `${cell.trip_count} 车 · ¥${fmtNum(cell.profit, 0)}`;
+}
+
+function renderCalendarGrid(data) {
+  CAL_DATA = data;
+  document.getElementById('r-cal-title').textContent = data.month_label;
+  const field = data.date_field === 'order_date' ? '接单日期' : '结算日期';
+  document.getElementById('r-cal-field-label').textContent = field;
+  document.getElementById('r-cal-weekdays').innerHTML =
+    (data.weekday_labels || ['一', '二', '三', '四', '五', '六', '日']).map(w => `<span>${w}</span>`).join('');
+
+  const inRangeDays = data.days.filter(d => d.in_range);
+  const maxV = Math.max(0, ...inRangeDays.map(d => calendarMetricValue(d)));
+  let html = '';
+  for (let i = 0; i < (data.pad_start || 0); i++) html += '<div class="cal-cell cal-pad"></div>';
+  data.days.forEach(cell => {
+    const v = calendarMetricValue(cell);
+    let heat = '';
+    if (cell.in_range && v > 0 && maxV > 0) {
+      const r = v / maxV;
+      heat = r > 0.75 ? ' cal-heat-4' : r > 0.5 ? ' cal-heat-3' : r > 0.25 ? ' cal-heat-2' : ' cal-heat-1';
+    }
+    const cls = ['cal-cell', cell.in_range ? '' : 'cal-out', v ? heat : ' cal-empty'].filter(Boolean).join(' ');
+    const href = cell.in_range && cell.trip_count
+      ? tripsUrl(reportFilter({ date_from: cell.date, date_to: cell.date }), `统计报表·日历 ${cell.date}`)
+      : null;
+    const inner = `<span class="cal-day">${cell.day}</span>
+      <div class="cal-val">${cell.in_range ? formatCalendarMetric(v) : '—'}</div>
+      <div class="cal-sub">${cell.in_range ? calendarCellSub(cell) : '范围外'}</div>`;
+    html += href
+      ? `<a class="${cls} cal-link" href="${href}">${inner}</a>`
+      : `<div class="${cls}">${inner}</div>`;
+  });
+  document.getElementById('r-cal-grid').innerHTML = html;
+  const mt = data.month_total || {};
+  document.getElementById('r-cal-footer').textContent =
+    `本月筛选范围内合计：${mt.trip_count || 0} 车 · ${fmtNum(mt.tonnage || 0, 1)} 吨 · 利润 ¥${fmtMoney(mt.profit || 0)}` +
+    (data.clip_start && data.clip_end ? `（有效日 ${data.clip_start} ~ ${data.clip_end}）` : '');
+}
+
+async function loadCalendar() {
+  if (CAL_YEAR == null) {
+    const m = calendarMonthFromFilter();
+    CAL_YEAR = m.year;
+    CAL_MONTH = m.month;
+  }
+  const p = new URLSearchParams(LAST_PARAMS);
+  p.set('year', String(CAL_YEAR));
+  p.set('month', String(CAL_MONTH));
+  try {
+    const data = await apiGet('/api/analytics/calendar?' + p.toString());
+    renderCalendarGrid(data);
+  } catch (e) {
+    document.getElementById('r-cal-grid').innerHTML =
+      `<div class="empty-hint" style="grid-column:1/-1;">加载失败：${e.message || e}</div>`;
+  }
 }
 
 // ---------------- 内链（2026-09-21）：报表里的数字点进去看对应车次，带上当前筛选 ----------------

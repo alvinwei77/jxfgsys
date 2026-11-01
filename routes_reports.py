@@ -337,6 +337,102 @@ def analytics_trend():
     return jsonify({"granularity": gran, "series": out})
 
 
+@app.route("/api/analytics/calendar")
+def analytics_calendar():
+    """按月日历格：每日车次/吨位/利润（沿用报表筛选：钢厂、车船、日期字段、date_from/date_to 与当月交集）。"""
+    conn = get_db()
+    today = dt.date.today()
+    try:
+        year = int(request.args.get("year") or today.year)
+        month = int(request.args.get("month") or today.month)
+    except (TypeError, ValueError):
+        return jsonify({"error": "year/month 无效"}), 400
+    if month < 1 or month > 12:
+        return jsonify({"error": "month 须在 1~12"}), 400
+    field = request.args.get("date_field", "settlement_date")
+    if field not in ("settlement_date", "order_date"):
+        field = "settlement_date"
+
+    first = dt.date(year, month, 1)
+    last = dt.date(year, month, 1).replace(day=28) + dt.timedelta(days=4)
+    last = last - dt.timedelta(days=last.day)
+
+    ff = (request.args.get("date_from") or "")[:10] or None
+    ft = (request.args.get("date_to") or "")[:10] or None
+    clip_start = dt.date.fromisoformat(ff) if ff else first
+    clip_end = dt.date.fromisoformat(ft) if ft else last
+    active_start = max(first, clip_start)
+    active_end = min(last, clip_end)
+
+    qargs = request.args.copy()
+    qargs = qargs.to_dict() if hasattr(qargs, "to_dict") else dict(qargs)
+    qargs["date_from"] = first.isoformat()
+    qargs["date_to"] = last.isoformat()
+    qargs["date_field"] = field
+
+    day_buckets = {}
+    d = first
+    while d <= last:
+        day_buckets[d.isoformat()] = _empty_stats_bucket(d.strftime("%m-%d"))
+        d += dt.timedelta(days=1)
+
+    for t in _report_trips(conn, qargs):
+        raw = t[field]
+        if not raw:
+            continue
+        dkey = str(raw)[:10]
+        if dkey not in day_buckets:
+            continue
+        _accum_bucket(day_buckets[dkey], t, _trip_breakdown(conn, t))
+
+    days_out = []
+    d = first
+    while d <= last:
+        iso = d.isoformat()
+        in_range = active_start <= d <= active_end
+        b = _finalize_bucket(day_buckets[iso])
+        days_out.append(
+            {
+                "date": iso,
+                "day": d.day,
+                "weekday": d.weekday(),
+                "in_range": in_range,
+                "trip_count": b["trip_count"],
+                "tonnage": b["tonnage"],
+                "profit": b["profit"],
+                "settlement_amount": b["settlement_amount"],
+            }
+        )
+        d += dt.timedelta(days=1)
+
+    # month_total: sum in_range days only
+    month_total = _empty_stats_bucket("合计")
+    for cell in days_out:
+        if not cell["in_range"]:
+            continue
+        month_total["trip_count"] += cell["trip_count"]
+        month_total["tonnage"] += cell["tonnage"]
+        month_total["profit"] += cell["profit"]
+        month_total["settlement_amount"] += cell["settlement_amount"]
+    month_total = _finalize_bucket(month_total)
+
+    pad_start = first.weekday()
+    return jsonify(
+        {
+            "year": year,
+            "month": month,
+            "month_label": f"{year}年{month}月",
+            "date_field": field,
+            "clip_start": active_start.isoformat() if active_start >= first else None,
+            "clip_end": active_end.isoformat() if active_end <= last else None,
+            "pad_start": pad_start,
+            "weekday_labels": ["一", "二", "三", "四", "五", "六", "日"],
+            "days": days_out,
+            "month_total": {k: month_total[k] for k in ("trip_count", "tonnage", "profit", "settlement_amount", "profit_per_ton")},
+        }
+    )
+
+
 @app.route("/api/analytics/quality")
 def analytics_quality():
     """质量：各供货厂扣杂率/结算均价；各货型吨位、均价及按月均价走势。"""
