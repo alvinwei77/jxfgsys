@@ -629,8 +629,12 @@ def export_ledger():
         return jsonify({"error": "缺少 openpyxl 依赖，请重新双击\"启动系统.command\"（会自动联网安装），再点一次导出"}), 500
 
     conn = get_db()
-    trips = conn.execute(
-        """SELECT t.*, m.name AS mill_name, a.name AS account_name, b.name AS base_name,
+    date_from = (request.args.get("date_from") or "")[:10] or None
+    date_to = (request.args.get("date_to") or "")[:10] or None
+    date_field = request.args.get("date_field") or "settlement_date"
+    if date_field not in ("settlement_date", "order_date"):
+        date_field = "settlement_date"
+    sql = """SELECT t.*, m.name AS mill_name, a.name AS account_name, b.name AS base_name,
                   b.is_dispatcher_alias AS base_is_alias, d.name AS dispatcher_name, s.name AS invoice_source_name,
                   ft.short_name AS template_short, ft.name AS template_name
            FROM trips t
@@ -640,9 +644,16 @@ def export_ledger():
            LEFT JOIN dispatchers d ON t.dispatcher_id = d.id
            LEFT JOIN invoice_sources s ON t.invoice_source_id = s.id
            LEFT JOIN flow_templates ft ON t.template_id = ft.id
-           WHERE t.status != 'voided'
-           ORDER BY coalesce(t.settlement_date, t.order_date, '') ASC, t.id ASC"""
-    ).fetchall()
+           WHERE t.status != 'voided'"""
+    args = []
+    if date_from:
+        sql += f" AND t.{date_field} IS NOT NULL AND date(t.{date_field}) >= date(?)"
+        args.append(date_from)
+    if date_to:
+        sql += f" AND t.{date_field} IS NOT NULL AND date(t.{date_field}) <= date(?)"
+        args.append(date_to)
+    sql += " ORDER BY coalesce(t.settlement_date, t.order_date, '') ASC, t.id ASC"
+    trips = conn.execute(sql, args).fetchall()
 
     fin_cache, bd_cache = {}, {}
 
@@ -688,7 +699,10 @@ def export_ledger():
     buf = io.BytesIO()
     wb.save(buf)
     buf.seek(0)
-    filename = f"废钢供应链台账_{dt.date.today().strftime('%Y%m%d')}.xlsx"
+    suffix = dt.date.today().strftime("%Y%m%d")
+    if date_from or date_to:
+        suffix += f"_{date_from or '起'}_{date_to or '止'}"
+    filename = f"废钢供应链台账_{suffix}.xlsx"
     return send_file(buf, as_attachment=True, download_name=filename,
                      mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
