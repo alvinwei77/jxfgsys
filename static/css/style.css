@@ -688,3 +688,6 @@ a.drill:hover { color: var(--blue); border-bottom-color: var(--blue); }
 .profit-formula-details[open] summary { margin-bottom: 8px; }
 .mindmap-svg .mm-node { cursor: pointer; }
 .mindmap-svg .mm-node:hover rect { stroke: var(--blue); fill: var(--blue-light); }
+.mindmap-svg .mm-edge-rate { cursor: pointer; }
+.mindmap-svg .mm-edge-rate:hover line,
+.mindmap-svg .mm-edge-rate:hover path { stroke-width: 2.2; }

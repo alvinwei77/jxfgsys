@@ -607,7 +607,10 @@ function renderModal(data) {
 
         <div>
           <div class="panel-title">利润分项（实时试算）${fin.is_locked ? '<span class="pill green">已固化</span>' : ''}</div>
-          <table class="profit-table" id="profit-table"></table>
+          <details class="profit-formula-details" open>
+            <summary>利润分项与计算过程（默认展开，便于财务核对）</summary>
+            <table class="profit-table" id="profit-table"></table>
+          </details>
           <div class="rate-edit">
             <div class="rate-edit-head">本车费率 <span class="muted">默认按"费率与关系"，这一车不一样就直接改，只影响这一车；清空=恢复默认</span></div>
             <table class="rate-table" id="rate-edit-table"></table>
