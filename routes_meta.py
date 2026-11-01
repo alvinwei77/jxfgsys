@@ -5,6 +5,7 @@ from calc import get_period_bounds
 from core import app, get_db, query
 from flask import jsonify, request
 from system_ops import audit
+import engine
 
 
 def _period_label_cn(ref_date: str) -> str:
@@ -132,6 +133,85 @@ def _term_row_for_period_start(source_id: int, period_start: str):
     return rows[0] if rows else None
 
 
+def _build_rate_wizard_items(conn, ref_day: str, period_start: str):
+    """户头垫资费：通用档 + 有专项或数值与通用不同的票源档。"""
+    catalog = {c["code"]: c for c in engine.RELATION_TYPE_CATALOG}
+    rel = "account_advance_fee"
+    cat = catalog.get(rel, {})
+    accounts = query("SELECT id, name FROM accounts ORDER BY id")
+    sources = query("SELECT id, name FROM invoice_sources ORDER BY name")
+    items = []
+    for acc in accounts:
+        global_val = engine.get_effective_rate(conn, rel, acc["id"], ref_day)
+        items.append(
+            {
+                "key": f"{rel}|account|{acc['id']}|",
+                "label": f"{acc['name']} · 垫资费(户头通用)",
+                "relation_type": rel,
+                "primary_entity_type": "account",
+                "primary_entity_id": acc["id"],
+                "secondary_entity_type": None,
+                "secondary_entity_id": None,
+                "rate_unit": cat.get("rate_unit") or "per_ton",
+                "current_rate": global_val,
+                "proposed_rate": global_val,
+                "apply_default": False,
+            }
+        )
+        for src in sources:
+            spec_val = engine.get_effective_rate(
+                conn, rel, acc["id"], ref_day, secondary_entity_id=src["id"]
+            )
+            has_row = query(
+                """
+                SELECT id FROM rate_links
+                WHERE relation_type=? AND primary_entity_type='account' AND primary_entity_id=?
+                  AND secondary_entity_type='invoice_source' AND secondary_entity_id=?
+                  AND date(effective_from) <= date(?)
+                  AND (effective_to IS NULL OR date(effective_to) >= date(?))
+                LIMIT 1
+                """,
+                (rel, acc["id"], src["id"], ref_day, ref_day),
+            )
+            if not has_row and abs(spec_val - global_val) < 0.001:
+                continue
+            items.append(
+                {
+                    "key": f"{rel}|account|{acc['id']}|source|{src['id']}",
+                    "label": f"{acc['name']} × {src['name']} · 垫资费",
+                    "relation_type": rel,
+                    "primary_entity_type": "account",
+                    "primary_entity_id": acc["id"],
+                    "secondary_entity_type": "invoice_source",
+                    "secondary_entity_id": src["id"],
+                    "rate_unit": cat.get("rate_unit") or "per_ton",
+                    "current_rate": spec_val,
+                    "proposed_rate": spec_val,
+                    "apply_default": bool(has_row),
+                }
+            )
+    for it in items:
+        ex = query(
+            """
+            SELECT id FROM rate_links
+            WHERE relation_type=? AND primary_entity_type=? AND primary_entity_id=?
+              AND ((secondary_entity_id IS NULL AND ? IS NULL) OR secondary_entity_id=?)
+              AND date(effective_from)=date(?)
+            LIMIT 1
+            """,
+            (
+                it["relation_type"],
+                it["primary_entity_type"],
+                it["primary_entity_id"],
+                it["secondary_entity_id"],
+                it["secondary_entity_id"],
+                period_start,
+            ),
+        )
+        it["existing_link_id"] = ex[0]["id"] if ex else None
+    return items
+
+
 @app.route("/api/rules/wizard/sheet")
 def api_rules_wizard_sheet():
     """本期改价向导：列出全部票源，默认从「上一日命中分期」复制到本结算期窗口。"""
@@ -179,12 +259,16 @@ def api_rules_wizard_sheet():
             }
         )
 
+    conn = get_db()
+    rate_items = _build_rate_wizard_items(conn, ref_day, period_start)
+
     return {
         "period_label": label,
         "period_start": period_start,
         "period_end": period_end,
         "ref_day": ref_day,
         "items": items,
+        "rate_items": rate_items,
     }
 
 
@@ -197,8 +281,10 @@ def api_rules_wizard_apply():
     if not period_start:
         return jsonify({"error": "缺少 period_start"}), 400
     rows_in = data.get("items") or []
+    rate_rows_in = data.get("rate_items") or []
     conn = get_db()
     created, updated, skipped = 0, 0, 0
+    rate_upserted = 0
     for row in rows_in:
         if not row.get("apply"):
             skipped += 1
@@ -295,8 +381,41 @@ def api_rules_wizard_apply():
                 "规则向导·本期分期",
             )
             created += 1
+    for rr in rate_rows_in:
+        if not rr.get("apply"):
+            continue
+        rv = rr.get("proposed_rate")
+        if rv is None or rv == "":
+            continue
+        eff_from = (rr.get("effective_from") or period_start)[:10]
+        sec_type = rr.get("secondary_entity_type")
+        sec_id = rr.get("secondary_entity_id")
+        if not sec_id:
+            sec_type = None
+        new_id = engine.upsert_rate(
+            conn,
+            rr["relation_type"],
+            rr["primary_entity_type"],
+            rr["primary_entity_id"],
+            float(rv),
+            eff_from,
+            rate_unit=rr.get("rate_unit") or "per_ton",
+            secondary_entity_type=sec_type,
+            secondary_entity_id=sec_id,
+            notes="规则向导·垫资费",
+        )
+        audit(
+            conn,
+            "rate_links",
+            new_id,
+            "rate_value",
+            rr.get("current_rate"),
+            float(rv),
+            "规则向导·垫资费",
+        )
+        rate_upserted += 1
     conn.commit()
-    return jsonify({"created": created, "updated": updated, "skipped": skipped})
+    return jsonify({"created": created, "updated": updated, "skipped": skipped, "rate_upserted": rate_upserted})
 
 
 @app.route("/api/rules/mindmap")
