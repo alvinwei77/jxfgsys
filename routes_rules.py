@@ -36,6 +36,78 @@ def create_flow_template():
     return jsonify({"id": cur.lastrowid, "ok": True})
 
 
+@app.route("/api/flow_templates/<int:tid>/clone", methods=["POST"])
+def clone_flow_template(tid):
+    """复制链条规则：元信息 + 计算节点 + 流程环节。新车次需选用新 template_id；默认停用。"""
+    data = request.get_json(force=True) or {}
+    new_code = (data.get("code") or "").strip()
+    new_name = (data.get("name") or "").strip()
+    if not new_code or not new_name:
+        return jsonify({"error": "code/name 必填"}), 400
+    conn = get_db()
+    src = conn.execute("SELECT * FROM flow_templates WHERE id=?", (tid,)).fetchone()
+    if not src:
+        return jsonify({"error": "not found"}), 404
+    if conn.execute("SELECT 1 FROM flow_templates WHERE code=?", (new_code,)).fetchone():
+        return jsonify({"error": f"链条规则代码'{new_code}'已存在"}), 400
+    short_name = (data.get("short_name") or src["short_name"] or new_name[:4]).strip()
+    description = data.get("description") if "description" in data else src["description"]
+    cur = conn.execute(
+        "INSERT INTO flow_templates (code,name,short_name,calc_family,description,is_active) VALUES (?,?,?,?,?,0)",
+        (new_code, new_name, short_name, src["calc_family"], description),
+    )
+    new_id = cur.lastrowid
+    for n in conn.execute(
+        "SELECT * FROM template_nodes WHERE template_id=? ORDER BY seq", (tid,)
+    ).fetchall():
+        conn.execute(
+            """INSERT INTO template_nodes
+               (template_id,seq,node_key,label,role_type,doc_types,calc_rule_type,calc_rule_config,
+                is_profit_component,profit_sign,is_reserved_component)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+            (
+                new_id,
+                n["seq"],
+                n["node_key"],
+                n["label"],
+                n["role_type"],
+                n["doc_types"],
+                n["calc_rule_type"],
+                n["calc_rule_config"],
+                n["is_profit_component"],
+                n["profit_sign"],
+                n["is_reserved_component"],
+            ),
+        )
+    for e in conn.execute(
+        "SELECT * FROM template_flow_edges WHERE template_id=? ORDER BY seq", (tid,)
+    ).fetchall():
+        conn.execute(
+            """INSERT INTO template_flow_edges
+               (template_id,seq,from_role_type,from_label,to_role_type,to_label,hop_type,node_key_ref,notes,
+                from_entity_type,from_entity_id,to_entity_type,to_entity_id,is_auto)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+            (
+                new_id,
+                e["seq"],
+                e["from_role_type"],
+                e["from_label"],
+                e["to_role_type"],
+                e["to_label"],
+                e["hop_type"],
+                e["node_key_ref"],
+                e["notes"],
+                e["from_entity_type"],
+                e["from_entity_id"],
+                e["to_entity_type"],
+                e["to_entity_id"],
+                e["is_auto"],
+            ),
+        )
+    conn.commit()
+    return jsonify({"id": new_id, "code": new_code, "ok": True})
+
+
 @app.route("/api/flow_templates/<int:tid>", methods=["PUT"])
 def update_flow_template(tid):
     """只能改展示用字段(name/short_name/description/is_active)，code和calc_family创建后不可改——

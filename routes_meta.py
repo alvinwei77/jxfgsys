@@ -630,3 +630,78 @@ def api_rules_relation_calc_map():
         if relations[code]
     ]
     return {"relations": out, "hint": "改费率走向导或「费率与关系」；改公式结构仍到「链条规则」。"}
+
+
+@app.route("/api/setup/mill_onboarding")
+def api_setup_mill_onboarding():
+    """新钢厂 / 新链条上线核对清单（只读扫描当前库）。"""
+    conn = get_db()
+    mills = query("SELECT id, name FROM steel_mills ORDER BY name")
+    mill_rows = []
+    for m in mills:
+        mid = m["id"]
+        tiers = query("SELECT COUNT(*) AS c FROM mill_reward_tiers WHERE mill_id=?", (mid,))[0]["c"]
+        tier_row = query(
+            "SELECT period_start_day, period_end_day FROM mill_reward_tiers WHERE mill_id=? LIMIT 1", (mid,)
+        )
+        psd = tier_row[0]["period_start_day"] if tier_row else None
+        ped = tier_row[0]["period_end_day"] if tier_row else None
+        accounts = query("SELECT COUNT(*) AS c FROM accounts WHERE mill_id=?", (mid,))[0]["c"]
+        trips = query(
+            "SELECT COUNT(*) AS c FROM trips WHERE mill_id=? AND status!='voided'", (mid,)
+        )[0]["c"]
+        settled = query(
+            """SELECT COUNT(*) AS c FROM trips WHERE mill_id=? AND status IN ('settled','invoiced','closed')""",
+            (mid,),
+        )[0]["c"]
+        mill_rows.append(
+            {
+                "id": mid,
+                "name": m["name"],
+                "tier_count": tiers,
+                "period_start_day": psd,
+                "period_end_day": ped,
+                "account_count": accounts,
+                "trip_count": trips,
+                "settled_trip_count": settled,
+                "ok_tiers": tiers > 0,
+                "ok_accounts": accounts > 0,
+                "ok_trips": trips > 0,
+            }
+        )
+    templates = query(
+        """SELECT ft.id, ft.code, ft.name, ft.short_name, ft.is_active,
+                  (SELECT COUNT(*) FROM trips t WHERE t.template_id=ft.id AND t.status!='voided') AS trip_count
+           FROM flow_templates ft ORDER BY ft.id"""
+    )
+    global_tips = []
+    if not mills:
+        global_tips.append({"level": "warn", "text": "尚未建立任何钢厂，请先在基础档案添加。"})
+    for m in mill_rows:
+        if not m["ok_tiers"]:
+            global_tips.append(
+                {
+                    "level": "warn",
+                    "text": f"「{m['name']}」未配置量补阶梯（周期起止日也在此表）。",
+                    "href": "/archives?tab=mill_reward_tiers",
+                }
+            )
+        if not m["ok_accounts"]:
+            global_tips.append(
+                {
+                    "level": "info",
+                    "text": f"「{m['name']}」还没有绑定户头。",
+                    "href": "/archives?tab=accounts",
+                }
+            )
+    return {
+        "mills": mill_rows,
+        "templates": [dict(t) for t in templates],
+        "tips": global_tips,
+        "playbook": [
+            "基础档案：钢厂 → 量补阶梯（含周期起止日）→ 户头",
+            "车次：为新车选 template_id / 结算模式（多数复用 M1~M5）",
+            "规则与算价：本期向导改票源分期与费率；链条规则「计算口径」改节点用哪类费率",
+            "验证：试算几车 → 系统「利润核对」→ python3 regression_check.py",
+        ],
+    }

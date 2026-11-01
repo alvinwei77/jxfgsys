@@ -31,9 +31,14 @@ async function loadRelationCalcMap() {
     return;
   }
   tbody.innerHTML = data.relations.map(rel => {
-    const nodes = rel.nodes.map(n =>
-      `<a href="/chain_rules?template=${encodeURIComponent(n.template_code)}">${esc(n.template_name)}</a> · ${esc(n.node_label)}`
-    ).join('<br>');
+    const nodes = rel.nodes.map(n => {
+      const qs = new URLSearchParams({
+        template: n.template_code,
+        tab: 'calc',
+        node: n.node_key,
+      });
+      return `<a href="/chain_rules?${qs}">${esc(n.template_name)}</a> · ${esc(n.node_label)}`;
+    }).join('<br>');
     return `<tr><td class="nowrap">${esc(rel.label)}</td><td>${nodes}</td></tr>`;
   }).join('');
 }
