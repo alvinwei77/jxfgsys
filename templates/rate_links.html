@@ -2,6 +2,7 @@
 {% block title %}费率与关系{% endblock %}
 {% block content %}
 {% include 'includes/subnav_rules.html' %}
+<div id="rate-focus-banner" class="note-banner" style="display:none;"></div>
 <div class="card chart-card">
   <div class="toolbar"><div style="font-size:13px;color:var(--gray-500);">业务关系图（供货厂/调货员 - 票源 - 户头 - 钢厂），仅展示当前生效的连接；节点下方灰字是挂在该节点上的费率。</div><div class="spacer"></div></div>
   <div id="rate-graph"></div>

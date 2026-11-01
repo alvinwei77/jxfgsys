@@ -45,7 +45,7 @@ async function renderRulesMindmap() {
     const a = pos[e.from], b = pos[e.to];
     const colDiff = Math.abs((colIndex[e.from] ?? 0) - (colIndex[e.to] ?? 0));
     const color = e.kind === 'rate' ? '#2563eb' : '#94a3b8';
-    const rateLink = e.kind === 'rate' ? '/rate_links' : null;
+    const rateLink = e.kind === 'rate' ? mindmapRateHref(e, a.node, b.node) : null;
     const wrapPath = (inner) => rateLink ? `<a href="${rateLink}" class="mm-edge-rate">${inner}</a>` : inner;
     if (colDiff > 1) {
       svg += wrapPath(`<path d="M${a.x},${a.y} C${a.x},${bypassY} ${b.x},${bypassY} ${b.x},${b.y}" fill="none" stroke="${color}" stroke-width="1.2"><title>${e.label} · 点此编辑费率</title></path>`);
@@ -70,6 +70,22 @@ async function renderRulesMindmap() {
   });
   svg += '</svg>';
   host.innerHTML = `<p class="muted" style="font-size:12px;margin:0 0 8px;">参考日 ${data.as_of} · 点击节点→档案 · <b>点击蓝线→费率与关系</b> · 灰线=归属。批量改价→本页向导。</p>${svg}`;
+}
+
+function mindmapRateHref(e, primaryNode, secondaryNode) {
+  if (!e.relation_type) return '/rate_links';
+  const q = new URLSearchParams({ rt: e.relation_type });
+  if (primaryNode) {
+    q.set('pt', primaryNode.type);
+    q.set('pid', String(primaryNode.entity_id));
+  }
+  if (secondaryNode) {
+    q.set('st', secondaryNode.type);
+    q.set('sid', String(secondaryNode.entity_id));
+  }
+  const asOf = typeof getRulesAsOf === 'function' ? getRulesAsOf() : '';
+  if (asOf) q.set('as_of', asOf);
+  return '/rate_links?' + q.toString();
 }
 
 function mindmapNodeHref(n) {

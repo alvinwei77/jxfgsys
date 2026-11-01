@@ -40,7 +40,8 @@ async function initRulesPeriodBar() {
   const bar = document.getElementById('rules-period-bar');
   if (!bar) return;
   const meta = await fetchSettlementPeriodMeta();
-  let asOf = localStorage.getItem(RULES_AS_OF_KEY) || meta.as_of_today;
+  const urlAsOf = new URLSearchParams(location.search).get('as_of');
+  let asOf = (urlAsOf && urlAsOf.slice(0, 10)) || localStorage.getItem(RULES_AS_OF_KEY) || meta.as_of_today;
   const inp = document.getElementById('rules-as-of');
   if (inp) {
     inp.value = asOf;

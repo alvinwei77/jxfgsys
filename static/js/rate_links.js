@@ -3,6 +3,51 @@ let CATALOG = [];
 let ARCH = {}; // processing_bases / dispatchers / invoice_sources / accounts / steel_mills
 let RATE_ROWS = [];
 let editingId = null;
+let RATE_FOCUS = null;
+
+function parseRateFocusFromUrl() {
+  const q = new URLSearchParams(location.search);
+  if (!q.get('rt') && !q.get('pid')) return null;
+  return {
+    rt: q.get('rt') || null,
+    pt: q.get('pt') || null,
+    pid: q.get('pid') ? Number(q.get('pid')) : null,
+    st: q.get('st') || null,
+    sid: q.get('sid') ? Number(q.get('sid')) : null,
+  };
+}
+
+function rowMatchesFocus(r, focus) {
+  if (!focus) return false;
+  if (focus.rt && r.relation_type !== focus.rt) return false;
+  if (focus.pt && r.primary_entity_type !== focus.pt) return false;
+  if (focus.pid != null && r.primary_entity_id !== focus.pid) return false;
+  if (focus.st && r.secondary_entity_type !== focus.st) return false;
+  if (focus.sid != null && r.secondary_entity_id !== focus.sid) return false;
+  return true;
+}
+
+function groupMatchesFocus(g) {
+  return RATE_FOCUS && g.some(r => rowMatchesFocus(r, RATE_FOCUS));
+}
+
+function updateRateFocusBanner() {
+  const box = document.getElementById('rate-focus-banner');
+  if (!box) return;
+  if (!RATE_FOCUS) { box.style.display = 'none'; box.innerHTML = ''; return; }
+  const cat = CATALOG.find(c => c.code === RATE_FOCUS.rt);
+  const typeLabel = cat ? cat.label : (RATE_FOCUS.rt || '费率');
+  const primaryName = RATE_FOCUS.pt && RATE_FOCUS.pid != null
+    ? (entityName(RATE_FOCUS.pt, RATE_FOCUS.pid) || `#${RATE_FOCUS.pid}`)
+    : '';
+  const secName = RATE_FOCUS.st && RATE_FOCUS.sid != null
+    ? (entityName(RATE_FOCUS.st, RATE_FOCUS.sid) || `#${RATE_FOCUS.sid}`)
+    : '';
+  const who = [primaryName, secName].filter(Boolean).join(' → ');
+  box.style.display = 'block';
+  box.innerHTML = `从关系图跳转：定位 <strong>${esc(typeLabel)}</strong>${who ? ` · ${esc(who)}` : ''}。` +
+    ` <a href="/rate_links">清除定位</a>`;
+}
 
 const ENTITY_META = {
   processing_base: { source: 'processing_bases', label: '供货厂/基地' },
@@ -164,6 +209,7 @@ function groupHtml(g) {
   const st = rowStatus(r0);
   const gk = groupKeyOf(r0);
   const open = !!GRP_OPEN[gk];
+  const focused = groupMatchesFocus(g);
   const primaryName = entityName(r0.primary_entity_type, r0.primary_entity_id) || '(全局兜底)';
   // 细分维度类型优先取记录自身的 secondary_entity_type（模板层加的维度可能不在费率目录里），再回落目录
   const secType = r0.secondary_entity_type || (cat && cat.secondary_type);
@@ -172,7 +218,7 @@ function groupHtml(g) {
     ? `${ENTITY_META[secType].label} ${g.length} 项${g.length > 1 ? '（分档）' : ''}`
     : '不分';
   const rateCell = vals.length === 1 ? vals[0] : `分档（${vals.length} 档）`;
-  let html = `<tr class="rate-merged-row">
+  let html = `<tr class="rate-merged-row${focused ? ' rate-row-highlight' : ''}"${focused ? ' id="rate-focus-row"' : ''}>
       <td class="nowrap">${esc(cat ? cat.label : r0.relation_type)}${g.length > 1 ? ` <span class="tag">${g.length} 条</span>` : ''}</td>
       <td class="nowrap">${esc(primaryName)}</td>
       <td class="nowrap">${esc(dimCell)}</td>
@@ -236,6 +282,7 @@ function renderTable() {
   if (!sections.length) body = `<tr><td colspan="8" class="empty-hint">暂无数据</td></tr>`;
   sections.forEach(sec => {
     if (SEC_OPEN[sec.key] === undefined) SEC_OPEN[sec.key] = !sec.folded;   // 往期默认收起
+    if (RATE_FOCUS && sec.rows.some(r => rowMatchesFocus(r, RATE_FOCUS))) SEC_OPEN[sec.key] = true;
     const open = SEC_OPEN[sec.key];
     body += `<tr class="rate-section-row" onclick="toggleSection('${sec.key}')">
         <td colspan="8">
@@ -264,6 +311,14 @@ function renderTable() {
       <th>费率/关系类型</th><th>对象</th><th>细分维度</th><th class="nowrap">费率</th>
       <th class="nowrap">生效区间</th><th class="nowrap">属性</th><th>备注</th><th class="nowrap">操作</th>
     </tr></thead><tbody>${body}</tbody>`;
+  updateRateFocusBanner();
+}
+
+function scrollToRateFocusRow() {
+  if (!RATE_FOCUS) return;
+  requestAnimationFrame(() => {
+    document.getElementById('rate-focus-row')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
 }
 
 // ---------------- 表单 ----------------
@@ -398,5 +453,6 @@ async function deleteRow(id) {
 
 document.getElementById('btn-add-rate').addEventListener('click', () => showForm(null));
 
-loadAll().then(() => { renderTable(); renderGraph(); });
+RATE_FOCUS = parseRateFocusFromUrl();
+loadAll().then(() => { renderTable(); scrollToRateFocusRow(); renderGraph(); });
 document.addEventListener('rules-as-of-changed', () => renderGraph());
