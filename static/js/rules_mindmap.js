@@ -45,10 +45,12 @@ async function renderRulesMindmap() {
     const a = pos[e.from], b = pos[e.to];
     const colDiff = Math.abs((colIndex[e.from] ?? 0) - (colIndex[e.to] ?? 0));
     const color = e.kind === 'rate' ? '#2563eb' : '#94a3b8';
+    const rateLink = e.kind === 'rate' ? '/rate_links' : null;
+    const wrapPath = (inner) => rateLink ? `<a href="${rateLink}" class="mm-edge-rate">${inner}</a>` : inner;
     if (colDiff > 1) {
-      svg += `<path d="M${a.x},${a.y} C${a.x},${bypassY} ${b.x},${bypassY} ${b.x},${b.y}" fill="none" stroke="${color}" stroke-width="1.2"><title>${e.label}</title></path>`;
+      svg += wrapPath(`<path d="M${a.x},${a.y} C${a.x},${bypassY} ${b.x},${bypassY} ${b.x},${b.y}" fill="none" stroke="${color}" stroke-width="1.2"><title>${e.label} · 点此编辑费率</title></path>`);
     } else {
-      svg += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${color}" stroke-width="1.2"><title>${e.label}</title></line>`;
+      svg += wrapPath(`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${color}" stroke-width="1.2"><title>${e.label}</title></line>`);
     }
   });
 
@@ -67,7 +69,7 @@ async function renderRulesMindmap() {
     });
   });
   svg += '</svg>';
-  host.innerHTML = `<p class="muted" style="font-size:12px;margin:0 0 8px;">参考日 ${data.as_of} · 点击节点去档案；蓝线=费率 · 灰线=归属。编辑费率 → <a href="/rate_links">费率与关系</a></p>${svg}`;
+  host.innerHTML = `<p class="muted" style="font-size:12px;margin:0 0 8px;">参考日 ${data.as_of} · 点击节点→档案 · <b>点击蓝线→费率与关系</b> · 灰线=归属。批量改价→本页向导。</p>${svg}`;
 }
 
 function mindmapNodeHref(n) {
